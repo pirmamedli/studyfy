@@ -1,0 +1,298 @@
+/* ============================================================================
+   STUDIFY — ДИЗАЙН-КОД v3 «Тёплый минимализм»
+   Единая система для всех разделов. Мобайл-нативная, обе темы полноценные.
+   Шрифты: Unbounded (числа/подпись) + Golos Text (интерфейс).
+   Подключение шрифтов:
+   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   1. ТОКЕНЫ — светлая тема (по умолчанию)
+   --------------------------------------------------------------------------- */
+:root {
+  /* Шрифты */
+  --font-display: "Unbounded", ui-sans-serif, system-ui, sans-serif; /* вордмарк, крупные числа */
+  --font-ui:      "Golos Text", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Цвет — поверхности */
+  --bg:        #F5F2EC;  /* тёплая бумага, плоская — без свечения */
+  --surface:   #FFFFFF;  /* карточка */
+  --surface-2: #F0EBE3;  /* утопленное поле / рекессед */
+  --ink-card:  #211D18;  /* «эспрессо» — фон hero-карты */
+
+  /* Цвет — текст */
+  --ink:   #1B1A17;  /* основной */
+  --ink-2: #55504A;  /* вторичный (≈8:1 на белом) */
+  --muted: #857C72;  /* подписи (≈4.7:1 на белом) */
+
+  /* Цвет — линии */
+  --line:   #E7E1D8; /* волосяная граница */
+  --line-2: #D8D0C5; /* усиленный разделитель */
+
+  /* Акцент — единственный «громкий» цвет */
+  --accent:       #F0570F; /* THE orange */
+  --accent-press: #CF470B; /* hover / press / текст на белом */
+  --accent-tint:  #FCEAE0; /* мягкая заливка */
+  --accent-ink:   #B44109; /* оранжевый текст на tint (AA) */
+  --on-accent:    #FFFFFF;
+
+  /* На тёмной hero-карте */
+  --on-card:      #F4EEE7;
+  --on-card-mut:  rgba(244,238,231,.62);
+  --on-card-line: rgba(244,238,231,.14);
+
+  /* Семантика */
+  --success: #2E7D51;
+  --warning: #B5730E;
+  --danger:  #C7452E;
+
+  /* Форма */
+  --r-xs: 8px;
+  --r-sm: 12px;   /* кнопки, инпуты, плитки иконок */
+  --r-md: 16px;   /* карточки */
+  --r-lg: 22px;   /* крупные / hero карточки */
+  --r-pill: 999px;
+
+  /* Тень — сдержанная: волосяная линия + один мягкий подъём */
+  --shadow-sm: 0 1px 2px rgba(40,26,12,.05);
+  --shadow-md: 0 18px 40px -26px rgba(70,44,20,.45);
+
+  /* Отступы (база 8) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+
+  /* Тач-зона */
+  --tap: 48px;
+
+  /* Движение */
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --dur:  190ms;
+}
+
+/* ---------------------------------------------------------------------------
+   2. ТОКЕНЫ — тёмная тема (полноценный режим, тёплый графит)
+   --------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --bg:        #121110;
+  --surface:   #1B1917;
+  --surface-2: #24211E;
+  --ink-card:  #262019;
+
+  --ink:   #F3EFE9;
+  --ink-2: #BEB6AC;
+  --muted: #8E867B;
+
+  --line:   rgba(244,239,233,.10);
+  --line-2: rgba(244,239,233,.17);
+
+  --accent:       #FF6A2C; /* ярче, чтобы «светился» на графите */
+  --accent-press: #FF7E44;
+  --accent-tint:  rgba(255,106,44,.15);
+  --accent-ink:   #FFA875;
+  --on-accent:    #211711;
+
+  --on-card:      #F4EEE7;
+  --on-card-mut:  rgba(244,238,231,.60);
+  --on-card-line: rgba(244,238,231,.13);
+
+  --success: #66B584;
+  --warning: #E0A24A;
+  --danger:  #E8836E;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+  --shadow-md: 0 18px 40px -24px rgba(0,0,0,.7);
+}
+
+/* ---------------------------------------------------------------------------
+   3. БАЗА
+   --------------------------------------------------------------------------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { border: 0; background: none; cursor: pointer; }
+a { color: var(--accent-press); text-decoration: none; }
+a:hover { color: var(--accent); }
+::selection { background: var(--accent-tint); }
+
+/* ---------------------------------------------------------------------------
+   4. ТИПОГРАФИКА
+   --------------------------------------------------------------------------- */
+.t-display { font-family: var(--font-display); font-weight: 600; font-size: 34px; line-height: 1.1;  letter-spacing: -.01em; }
+.t-h1      { font-family: var(--font-ui);      font-weight: 700; font-size: 26px; line-height: 1.18; letter-spacing: -.01em; }
+.t-h2      { font-family: var(--font-ui);      font-weight: 700; font-size: 20px; line-height: 1.25; letter-spacing: -.005em; }
+.t-h3      { font-family: var(--font-ui);      font-weight: 600; font-size: 17px; line-height: 1.3; }
+.t-body    { font-family: var(--font-ui);      font-weight: 400; font-size: 16px; line-height: 1.5; }
+.t-label   { font-family: var(--font-ui);      font-weight: 600; font-size: 14px; line-height: 1.4; }
+.t-caption { font-family: var(--font-ui);      font-weight: 500; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.t-eyebrow { font-family: var(--font-ui);      font-weight: 600; font-size: 11px; line-height: 1.3; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.t-num     { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+
+/* ---------------------------------------------------------------------------
+   5. КНОПКИ  (высота ≥48px — крупная тач-зона)
+   --------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  min-height: var(--tap); padding: 0 var(--s5);
+  font-family: var(--font-ui); font-weight: 600; font-size: 16px;
+  border-radius: var(--r-sm); border: 1px solid transparent;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease), color var(--dur) var(--ease);
+  user-select: none;
+}
+.btn:active { transform: scale(.98); }
+.btn:focus-visible { outline: 3px solid var(--accent-tint); outline-offset: 2px; }
+.btn[disabled], .btn.is-disabled { opacity: .45; pointer-events: none; }
+
+.btn-primary   { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-press); }
+
+.btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line-2); }
+.btn-secondary:hover { border-color: var(--ink-2); }
+
+.btn-ghost     { background: transparent; color: var(--accent-ink); }
+.btn-ghost:hover { background: var(--accent-tint); }
+
+.btn-danger    { background: transparent; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+.btn-danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+.btn-block { display: flex; width: 100%; }
+.btn-sm    { min-height: 38px; padding: 0 var(--s4); font-size: 14px; border-radius: var(--r-xs); }
+
+.btn.is-loading { color: transparent; position: relative; pointer-events: none; }
+.btn.is-loading::after {
+  content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent;
+  color: var(--on-accent); animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------------------
+   6. ПОЛЯ ВВОДА
+   --------------------------------------------------------------------------- */
+.field { display: block; }
+.field > .field-label { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: var(--s2); }
+.input {
+  width: 100%; min-height: var(--tap); padding: 0 var(--s4);
+  background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: var(--r-sm);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.input::placeholder { color: var(--muted); }
+.input:hover  { border-color: var(--ink-2); }
+.input:focus  { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-tint); }
+.input.is-error { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+.field-hint  { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.field-hint.is-error { color: var(--danger); }
+
+/* Поиск */
+.search {
+  display: flex; align-items: center; gap: var(--s3);
+  min-height: var(--tap); padding: 0 var(--s4);
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm);
+  color: var(--muted);
+}
+.search input { flex: 1; border: 0; background: none; outline: none; color: var(--ink); }
+
+/* ---------------------------------------------------------------------------
+   7. КАРТОЧКИ И ПОВЕРХНОСТИ
+   --------------------------------------------------------------------------- */
+.card       { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-sm); }
+.card-pad   { padding: var(--s5); }
+.card-hero  { background: var(--ink-card); color: var(--on-card); border: 0; border-radius: var(--r-lg); box-shadow: var(--shadow-md); }
+.card-inset { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); }
+
+/* Список внутри одного контейнера — делённые строки, без вложенных карточек */
+.list        { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+.list-row    { display: flex; align-items: center; gap: var(--s3); width: 100%; padding: var(--s4); text-align: left; transition: background var(--dur) var(--ease); }
+.list-row + .list-row { border-top: 1px solid var(--line); }
+button.list-row:hover { background: var(--surface-2); }
+
+/* ---------------------------------------------------------------------------
+   8. БЕЙДЖИ / ЧИПЫ / XP
+   --------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: var(--r-pill);
+  background: var(--surface-2); color: var(--ink-2);
+}
+.badge-xp     { background: var(--accent-tint); color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+.badge-success{ background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+.badge-outline{ background: transparent; border: 1px solid var(--line-2); color: var(--ink-2); }
+
+.chip {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--s4);
+  border-radius: var(--r-pill); font-size: 14px; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--line-2); color: var(--ink-2);
+  transition: all var(--dur) var(--ease);
+}
+.chip[aria-pressed="true"], .chip.is-active { background: var(--accent-tint); border-color: transparent; color: var(--accent-ink); }
+
+/* ---------------------------------------------------------------------------
+   9. ИКОНКИ ПРЕДМЕТОВ — единый монохромный стиль
+   Плитка нейтральная во всех темах; штрих — вторичные чернила; активная — оранжевая.
+   --------------------------------------------------------------------------- */
+.subj-tile {
+  width: 44px; height: 44px; flex: none; border-radius: var(--r-sm);
+  background: var(--surface-2); display: grid; place-items: center;
+}
+.subj-tile svg { width: 26px; height: 26px; }
+.subj-tile svg path { stroke: var(--ink-2); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.subj-tile.is-active { background: var(--accent-tint); }
+.subj-tile.is-active svg path { stroke: var(--accent); }
+
+/* ---------------------------------------------------------------------------
+   10. ПРОГРЕСС
+   --------------------------------------------------------------------------- */
+.progress-track { height: 8px; border-radius: var(--r-pill); background: var(--surface-2); overflow: hidden; }
+.progress-fill  { height: 100%; border-radius: var(--r-pill); background: var(--accent); transition: width .9s var(--ease); }
+
+/* Кольцо: svg с r=32, stroke-width 6, обводка var(--accent) */
+.ring-val { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------------------
+   11. НАВИГАЦИЯ — равная геометрия, «Домой» не приподнят
+   --------------------------------------------------------------------------- */
+.tabbar {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+  padding: var(--s2) var(--s2) calc(var(--s2) + env(safe-area-inset-bottom));
+}
+.tabbar a {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-height: var(--tap); justify-content: center;
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  transition: color var(--dur) var(--ease);
+}
+.tabbar a svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar a.is-active { color: var(--accent); }
+.tabbar a.is-active .tab-ico { background: var(--accent-tint); }
+.tab-ico { width: 46px; height: 30px; border-radius: var(--r-pill); display: grid; place-items: center; transition: background var(--dur) var(--ease); }
+
+/* ---------------------------------------------------------------------------
+   12. ТУМБЛЕР
+   --------------------------------------------------------------------------- */
+.toggle { position: relative; width: 48px; height: 28px; border-radius: var(--r-pill); background: var(--line-2); transition: background var(--dur) var(--ease); flex: none; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform var(--dur) var(--ease); box-shadow: var(--shadow-sm); }
+.toggle[aria-checked="true"] { background: var(--accent); }
+.toggle[aria-checked="true"]::after { transform: translateX(20px); }
+
+/* Сегмент-контрол */
+.segment { display: inline-flex; padding: 4px; gap: 4px; background: var(--surface-2); border-radius: var(--r-sm); }
+.segment button { padding: 8px 16px; border-radius: var(--r-xs); font-weight: 600; font-size: 14px; color: var(--muted); }
+.segment button.is-active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* ---------------------------------------------------------------------------
+   13. УТИЛИТЫ
+   --------------------------------------------------------------------------- */
+.stack   { display: flex; flex-direction: column; }
+.row     { display: flex; align-items: center; }
+.divider { height: 1px; background: var(--line); border: 0; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 var(--s3); }

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-display:"Unbounded",ui-sans-serif,system-ui,sans-serif;
+  --font-ui:"Golos Text",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --bg:#F5F2EC; --surface:#FFFFFF; --surface-2:#F0EBE3; --ink-card:#211D18;
+  --ink:#1B1A17; --ink-2:#55504A; --muted:#857C72;
+  --line:#E7E1D8; --line-2:#D8D0C5;
+  --accent:#F0570F; --accent-press:#CF470B; --accent-tint:#FCEAE0; --accent-ink:#B44109; --on-accent:#FFFFFF;
+  --on-card:#F4EEE7; --on-card-mut:rgba(244,238,231,.62); --on-card-line:rgba(244,238,231,.14);
+  --success:#2E7D51; --warning:#B5730E; --danger:#C7452E;
+}
+[data-theme="dark"]{
+  --bg:#121110; --surface:#1B1917; --surface-2:#24211E; --ink-card:#262019;
+  --ink:#F3EFE9; --ink-2:#BEB6AC; --muted:#8E867B;
+  --line:rgba(244,239,233,.10); --line-2:rgba(244,239,233,.17);
+  --accent:#FF6A2C; --accent-press:#FF7E44; --accent-tint:rgba(255,106,44,.15); --accent-ink:#FFA875; --on-accent:#211711;
+  --on-card:#F4EEE7; --on-card-mut:rgba(244,238,231,.60); --on-card-line:rgba(244,238,231,.13);
+  --success:#66B584; --warning:#E0A24A; --danger:#E8836E;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{font-family:var(--font-ui);background:#E9E4DC;color:#1B1A17;-webkit-font-smoothing:antialiased;line-height:1.5;}
+a{color:#B44109;}
+</style>
+</helmet>
+
+<div style="padding:56px 40px 120px;">
+  <header style="max-width:680px;margin:0 auto 8px;text-align:center;">
+    <div style="font-family:var(--font-display);font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#B44109;margin-bottom:14px;">стадифай</div>
+    <h1 style="font-family:var(--font-ui);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.1;letter-spacing:-.02em;margin:0 0 14px;color:#1B1A17;">Экраны · редизайн</h1>
+    <p style="font-size:16px;color:#55504A;margin:0 auto;max-width:56ch;">Все разделы, собранные на единой системе «Тёплый минимализм». Один выверенный вариант, обе темы, мобайл и десктоп.</p>
+  </header>
+
+  <!-- ===================== ГРУППА: ВХОД + ГЛАВНАЯ ===================== -->
+  <div style="text-align:center;margin:64px 0 28px;"><span style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9A8C7C;">Вход и главная</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:44px 40px;justify-content:center;align-items:flex-start;">
+
+    <!-- ---------- ОНБОРДИНГ / ВХОД ---------- -->
+    <dc-import name="Phone" label="Вход" theme="light" show-tab="{{ false }}" hint-size="402px,866px">
+      <div style="height:100%;display:flex;flex-direction:column;padding:0 24px 28px;">
+        <div style="font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-align:center;padding:18px 0 0;">стадифай</div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <img src="assets/mascot.png" alt="" style="width:104px;height:104px;object-fit:contain;margin:0 auto 22px;" />
+          <h2 style="font-family:var(--font-display);font-weight:600;font-size:26px;line-height:1.15;letter-spacing:-.01em;text-align:center;color:var(--ink);margin:0 0 8px;">С возвращением</h2>
+          <p style="text-align:center;font-size:15px;color:var(--muted);margin:0 0 28px;">Продолжим подготовку к ЕГЭ</p>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px;">Код доступа</label>
+          <input value="BETA-2026" style="width:100%;min-height:52px;padding:0 16px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;box-shadow:0 0 0 3px var(--accent-tint);color:var(--ink);font-weight:500;" />
+          <button style="width:100%;min-height:52px;margin-top:16px;font-weight:600;font-size:16px;border-radius:12px;background:var(--accent);color:var(--on-accent);">Войти</button>
+          <button style="width:100%;min-height:48px;margin-top:10px;font-weight:600;font-size:15px;border-radius:12px;background:transparent;color:var(--accent-ink);">Оставить заявку</button>
+        </div>
+        <p style="text-align:center;font-size:12px;color:var(--muted);margin:0;">Нажимая «Войти», ты принимаешь правила сервиса</p>
+      </div>
+    </dc-import>
+
+    <!-- ---------- ГЛАВНАЯ · СВЕТЛАЯ ---------- -->
+    <dc-import name="Phone" label="Главная · светлая" theme="light" tab="home" hint-size="402px,866px">
+      <div data-screen-label="Главная" style="height:100%;overflow:hidden;padding:16px 20px 8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <span style="font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);">стадифай</span>
+          <span style="width:40px;height:40px;border-radius:999px;display:grid;place-items:center;font-weight:600;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);">М</span>
+        </div>
+        <h1 style="font-family:var(--font-display);font-weight:600;font-size:27px;line-height:1.12;letter-spacing:-.01em;color:var(--ink);margin:0 0 6px;">Привет, <span style="color:var(--accent);">Мурад</span></h1>
+        <p style="font-size:14px;color:var(--muted);margin:0 0 20px;">До ЕГЭ 65 дней · сегодня 3 цели</p>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;margin-bottom:18px;">
+          <div style="padding:14px 15px;"><div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Звание</div><div style="font-weight:700;font-size:16px;color:var(--ink);">Магистр</div></div>
+          <div style="padding:14px 15px;border-left:1px solid var(--line);"><div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Класс</div><div style="font-weight:700;font-size:16px;color:var(--ink);">11</div></div>
+          <div style="padding:14px 15px;border-left:1px solid var(--line);"><div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Серия</div><div style="font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;">25</div></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;color:var(--muted);margin-bottom:22px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <span style="font-size:14px;">Найти тест или материал</span>
+        </div>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+          <div><div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:2px;">Фокус на сегодня</div><h2 style="font-weight:700;font-size:18px;color:var(--ink);margin:0;">Сегодняшний план</h2></div>
+          <span style="font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--accent-tint);color:var(--accent-ink);font-variant-numeric:tabular-nums;">+45 XP</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:13px;padding:14px 15px;"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="m22 42 3.5-10.5L40 17l7 7-14.5 14.5L22 42ZM35.5 21.5l7 7M22 46h25" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Русский язык</div><div style="font-size:12px;color:var(--muted);">10 заданий · 20 XP</div></div><span style="width:22px;height:22px;border-radius:999px;border:2px solid var(--line-2);flex:none;"></span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:14px 15px;border-top:1px solid var(--line);"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="m18 26 14-8 14 8H18ZM21 30h22M24 30v13M32 30v13M40 30v13M20 43h24M17 47h30" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">История</div><div style="font-size:12px;color:var(--muted);">5 карточек · 10 XP</div></div><span style="width:22px;height:22px;border-radius:999px;border:2px solid var(--line-2);flex:none;"></span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:14px 15px;border-top:1px solid var(--line);"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--accent-tint);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="M21 24h22M21 32h22M21 40h22M25 21v6M39 29v6" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2);">Математика</div><div style="font-size:12px;color:var(--muted);">3 задачи · 15 XP</div></div><span style="width:22px;height:22px;border-radius:999px;background:var(--accent);flex:none;position:relative;"><span style="position:absolute;inset:0;margin:auto;width:10px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg);"></span></span></div>
+        </div>
+
+        <div style="background:var(--ink-card);border-radius:22px;padding:20px;display:flex;align-items:center;gap:16px;box-shadow:0 18px 40px -26px rgba(70,44,20,.45);">
+          <div style="flex:1;"><div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;">Ближайшая цель</div><div style="font-weight:700;font-size:17px;color:var(--on-card);margin-bottom:5px;">До звания «Профессор»</div><div style="font-size:12px;color:var(--on-card-mut);">осталось <b style="color:var(--on-card);">80 XP</b></div></div>
+          <div style="position:relative;width:66px;height:66px;flex:none;"><svg width="66" height="66" viewBox="0 0 66 66" style="transform:rotate(-90deg);"><circle cx="33" cy="33" r="28" fill="none" stroke="rgba(244,238,231,.16)" stroke-width="6"/><circle cx="33" cy="33" r="28" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="175.9" stroke-dashoffset="56.3"/></svg><span style="position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--on-card);font-variant-numeric:tabular-nums;">68%</span></div>
+        </div>
+      </div>
+    </dc-import>
+
+    <!-- ---------- ГЛАВНАЯ · ТЁМНАЯ ---------- -->
+    <dc-import name="Phone" label="Главная · тёмная" theme="dark" tab="home" hint-size="402px,866px">
+      <div data-screen-label="Главная тёмная" style="height:100%;overflow:hidden;padding:16px 20px 8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <span style="font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);">стадифай</span>
+          <span style="width:40px;height:40px;border-radius:999px;display:grid;place-items:center;font-weight:600;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);">М</span>
+        </div>
+        <h1 style="font-family:var(--font-display);font-weight:600;font-size:27px;line-height:1.12;letter-spacing:-.01em;color:var(--ink);margin:0 0 6px;">Привет, <span style="color:var(--accent);">Мурад</span></h1>
+        <p style="font-size:14px;color:var(--muted);margin:0 0 20px;">До ЕГЭ 65 дней · сегодня 3 цели</p>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:18px;">
+          <div style="padding:14px 15px;"><div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Звание</div><div style="font-weight:700;font-size:16px;color:var(--ink);">Магистр</div></div>
+          <div style="padding:14px 15px;border-left:1px solid var(--line);"><div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Класс</div><div style="font-weight:700;font-size:16px;color:var(--ink);">11</div></div>
+          <div style="padding:14px 15px;border-left:1px solid var(--line);"><div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Серия</div><div style="font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;">25</div></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;color:var(--muted);margin-bottom:22px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <span style="font-size:14px;">Найти тест или материал</span>
+        </div>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+          <div><div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:2px;">Фокус на сегодня</div><h2 style="font-weight:700;font-size:18px;color:var(--ink);margin:0;">Сегодняшний план</h2></div>
+          <span style="font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--accent-tint);color:var(--accent-ink);font-variant-numeric:tabular-nums;">+45 XP</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:13px;padding:14px 15px;"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="m22 42 3.5-10.5L40 17l7 7-14.5 14.5L22 42ZM35.5 21.5l7 7M22 46h25" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Русский язык</div><div style="font-size:12px;color:var(--muted);">10 заданий · 20 XP</div></div><span style="width:22px;height:22px;border-radius:999px;border:2px solid var(--line-2);flex:none;"></span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:14px 15px;border-top:1px solid var(--line);"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="m18 26 14-8 14 8H18ZM21 30h22M24 30v13M32 30v13M40 30v13M20 43h24M17 47h30" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">История</div><div style="font-size:12px;color:var(--muted);">5 карточек · 10 XP</div></div><span style="width:22px;height:22px;border-radius:999px;border:2px solid var(--line-2);flex:none;"></span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:14px 15px;border-top:1px solid var(--line);"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--accent-tint);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="M21 24h22M21 32h22M21 40h22M25 21v6M39 29v6" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2);">Математика</div><div style="font-size:12px;color:var(--muted);">3 задачи · 15 XP</div></div><span style="width:22px;height:22px;border-radius:999px;background:var(--accent);flex:none;position:relative;"><span style="position:absolute;inset:0;margin:auto;width:10px;height:6px;border-left:2px solid var(--on-accent);border-bottom:2px solid var(--on-accent);transform:translateY(-1px) rotate(-45deg);"></span></span></div>
+        </div>
+
+        <div style="background:var(--ink-card);border-radius:22px;padding:20px;display:flex;align-items:center;gap:16px;border:1px solid var(--line);">
+          <div style="flex:1;"><div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;">Ближайшая цель</div><div style="font-weight:700;font-size:17px;color:var(--on-card);margin-bottom:5px;">До звания «Профессор»</div><div style="font-size:12px;color:var(--on-card-mut);">осталось <b style="color:var(--on-card);">80 XP</b></div></div>
+          <div style="position:relative;width:66px;height:66px;flex:none;"><svg width="66" height="66" viewBox="0 0 66 66" style="transform:rotate(-90deg);"><circle cx="33" cy="33" r="28" fill="none" stroke="rgba(244,238,231,.16)" stroke-width="6"/><circle cx="33" cy="33" r="28" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="175.9" stroke-dashoffset="56.3"/></svg><span style="position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--on-card);font-variant-numeric:tabular-nums;">68%</span></div>
+        </div>
+      </div>
+    </dc-import>
+
+  </div>
+
+  <!-- ===================== ГРУППА: ЗАДАНИЯ + ТЕСТ ===================== -->
+  <div style="text-align:center;margin:64px 0 28px;"><span style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9A8C7C;">Задания и тест</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:44px 40px;justify-content:center;align-items:flex-start;">
+
+    <!-- ---------- ЗАДАНИЯ (список предметов) ---------- -->
+    <dc-import name="Phone" label="Задания" theme="light" tab="tasks" hint-size="402px,866px">
+      <div data-screen-label="Задания" style="height:100%;overflow:hidden;padding:16px 20px 8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <h1 style="font-family:var(--font-ui);font-weight:700;font-size:23px;letter-spacing:-.01em;color:var(--ink);margin:0;">Задания</h1>
+          <span style="font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--accent-tint);color:var(--accent-ink);font-variant-numeric:tabular-nums;">3 / 8 предметов</span>
+        </div>
+        <div style="display:flex;gap:8px;overflow:hidden;margin-bottom:18px;">
+          <span style="display:inline-flex;align-items:center;min-height:36px;padding:0 15px;border-radius:999px;font-size:14px;font-weight:600;background:var(--accent-tint);color:var(--accent-ink);white-space:nowrap;">Все</span>
+          <span style="display:inline-flex;align-items:center;min-height:36px;padding:0 15px;border-radius:999px;font-size:14px;font-weight:500;background:var(--surface);border:1px solid var(--line-2);color:var(--ink-2);white-space:nowrap;">Не начаты</span>
+          <span style="display:inline-flex;align-items:center;min-height:36px;padding:0 15px;border-radius:999px;font-size:14px;font-weight:500;background:var(--surface);border:1px solid var(--line-2);color:var(--ink-2);white-space:nowrap;">В работе</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="m22 42 3.5-10.5L40 17l7 7-14.5 14.5L22 42ZM35.5 21.5l7 7M22 46h25" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;">Русский язык</div><div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:70%;height:100%;background:var(--accent);"></div></div></div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">70%</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-top:1px solid var(--line);"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="M22 43 42 21M23 21h18v22H23zM27 27h10M27 32h10M27 37h5" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;">Математика</div><div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:45%;height:100%;background:var(--accent);"></div></div></div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">45%</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-top:1px solid var(--line);"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="m18 26 14-8 14 8H18ZM21 30h22M24 30v13M32 30v13M40 30v13M20 43h24M17 47h30" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;">История</div><div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:30%;height:100%;background:var(--accent);"></div></div></div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">30%</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-top:1px solid var(--line);"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="M45 20c-13 .3-22 7.2-22 17.2 0 5.1 3.8 8.8 8.7 8.8C42 46 45.5 34 45 20ZM21 46c4.5-8.5 10-13.8 18-18" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;">Биология</div><div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:12%;height:100%;background:var(--accent);"></div></div></div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">12%</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-top:1px solid var(--line);"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="m27 24-8 8 8 8M37 24l8 8-8 8M35 20l-6 24" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;">Информатика</div><div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:5%;height:100%;background:var(--accent);"></div></div></div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">5%</span></div>
+        </div>
+      </div>
+    </dc-import>
+
+    <!-- ---------- ТЕСТ (вопрос) ---------- -->
+    <dc-import name="Phone" label="Тест · вопрос" theme="light" show-tab="{{ false }}" hint-size="402px,866px">
+      <div data-screen-label="Тест" style="height:100%;display:flex;flex-direction:column;padding:16px 20px 24px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+          <span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface);border:1px solid var(--line-2);display:grid;place-items:center;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span>
+          <div style="flex:1;height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:40%;height:100%;background:var(--accent);border-radius:999px;"></div></div>
+          <span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">4/10</span>
+        </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;">Русский язык · орфография</div>
+        <h2 style="font-family:var(--font-ui);font-weight:700;font-size:21px;line-height:1.3;letter-spacing:-.01em;color:var(--ink);margin:0 0 24px;text-wrap:balance;">В каком слове на месте пропуска пишется буква «и»?</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;flex:1;">
+          <button style="display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink);"><span style="width:26px;height:26px;flex:none;border-radius:999px;border:2px solid var(--line-2);font-size:13px;font-weight:600;display:grid;place-items:center;color:var(--muted);">А</span><span style="font-size:16px;font-weight:500;">пр…бывать в город</span></button>
+          <button style="display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;background:var(--accent-tint);border:1px solid var(--accent);color:var(--ink);box-shadow:0 0 0 3px var(--accent-tint);"><span style="width:26px;height:26px;flex:none;border-radius:999px;background:var(--accent);font-size:13px;font-weight:600;display:grid;place-items:center;color:var(--on-accent);">Б</span><span style="font-size:16px;font-weight:600;">пр…умножить доход</span></button>
+          <button style="display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink);"><span style="width:26px;height:26px;flex:none;border-radius:999px;border:2px solid var(--line-2);font-size:13px;font-weight:600;display:grid;place-items:center;color:var(--muted);">В</span><span style="font-size:16px;font-weight:500;">пр…града на пути</span></button>
+          <button style="display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink);"><span style="width:26px;height:26px;flex:none;border-radius:999px;border:2px solid var(--line-2);font-size:13px;font-weight:600;display:grid;place-items:center;color:var(--muted);">Г</span><span style="font-size:16px;font-weight:500;">пр…морский бульвар</span></button>
+        </div>
+        <button style="width:100%;min-height:52px;margin-top:20px;font-weight:600;font-size:16px;border-radius:12px;background:var(--accent);color:var(--on-accent);">Ответить</button>
+      </div>
+    </dc-import>
+
+  </div>
+
+  <!-- ===================== ГРУППА: ПРОГРЕСС + МАТЕРИАЛЫ ===================== -->
+  <div style="text-align:center;margin:64px 0 28px;"><span style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9A8C7C;">Прогресс, рейтинг и материалы</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:44px 40px;justify-content:center;align-items:flex-start;">
+
+    <!-- ---------- ПРОГРЕСС + РЕЙТИНГ ---------- -->
+    <dc-import name="Phone" label="Прогресс" theme="light" tab="progress" hint-size="402px,866px">
+      <div data-screen-label="Прогресс" style="height:100%;overflow:hidden;padding:16px 20px 8px;">
+        <h1 style="font-family:var(--font-ui);font-weight:700;font-size:23px;letter-spacing:-.01em;color:var(--ink);margin:0 0 18px;">Прогресс</h1>
+        <div style="background:var(--ink-card);border-radius:22px;padding:22px;display:flex;align-items:center;gap:18px;margin-bottom:16px;box-shadow:0 18px 40px -26px rgba(70,44,20,.45);">
+          <div style="position:relative;width:88px;height:88px;flex:none;"><svg width="88" height="88" viewBox="0 0 88 88" style="transform:rotate(-90deg);"><circle cx="44" cy="44" r="38" fill="none" stroke="rgba(244,238,231,.16)" stroke-width="8"/><circle cx="44" cy="44" r="38" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="76.4"/></svg><span style="position:absolute;inset:0;display:grid;place-items:center;flex-direction:column;"><span style="font-family:var(--font-display);font-weight:600;font-size:22px;color:var(--on-card);font-variant-numeric:tabular-nums;line-height:1;">68<span style="font-size:13px;">%</span></span></span></div>
+          <div style="flex:1;"><div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Общий прогресс</div><div style="font-weight:700;font-size:18px;color:var(--on-card);margin-bottom:4px;">Магистр · 1240 XP</div><div style="font-size:13px;color:var(--on-card-mut);">до «Профессора» 80 XP</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;">
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);"><div style="font-family:var(--font-display);font-weight:600;font-size:26px;color:var(--ink);line-height:1;">25</div><div style="font-size:12px;color:var(--muted);margin-top:6px;">дней серия</div></div>
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);"><div style="font-family:var(--font-display);font-weight:600;font-size:26px;color:var(--ink);line-height:1;">312</div><div style="font-size:12px;color:var(--muted);margin-top:6px;">решено заданий</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h2 style="font-weight:700;font-size:17px;color:var(--ink);margin:0;">Рейтинг класса</h2><span style="font-size:13px;font-weight:600;color:var(--accent-ink);">Вся неделя</span></div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:13px;padding:13px 15px;"><span style="width:24px;font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--muted);text-align:center;">1</span><span style="width:34px;height:34px;flex:none;border-radius:999px;background:var(--surface-2);display:grid;place-items:center;font-weight:600;font-size:13px;color:var(--ink-2);">А</span><div style="flex:1;font-size:15px;font-weight:600;color:var(--ink);">Алина К.</div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">1580</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-top:1px solid var(--line);"><span style="width:24px;font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--muted);text-align:center;">2</span><span style="width:34px;height:34px;flex:none;border-radius:999px;background:var(--surface-2);display:grid;place-items:center;font-weight:600;font-size:13px;color:var(--ink-2);">Д</span><div style="flex:1;font-size:15px;font-weight:600;color:var(--ink);">Дмитрий Р.</div><span style="font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;">1390</span></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-top:1px solid var(--accent);background:var(--accent-tint);"><span style="width:24px;font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--accent-ink);text-align:center;">3</span><span style="width:34px;height:34px;flex:none;border-radius:999px;background:var(--accent);display:grid;place-items:center;font-weight:600;font-size:13px;color:var(--on-accent);">М</span><div style="flex:1;font-size:15px;font-weight:700;color:var(--accent-ink);">Ты</div><span style="font-size:13px;font-weight:700;color:var(--accent-ink);font-variant-numeric:tabular-nums;">1240</span></div>
+        </div>
+      </div>
+    </dc-import>
+
+    <!-- ---------- МАТЕРИАЛЫ ---------- -->
+    <dc-import name="Phone" label="Материалы" theme="dark" tab="materials" hint-size="402px,866px">
+      <div data-screen-label="Материалы" style="height:100%;overflow:hidden;padding:16px 20px 8px;">
+        <h1 style="font-family:var(--font-ui);font-weight:700;font-size:23px;letter-spacing:-.01em;color:var(--ink);margin:0 0 16px;">Материалы</h1>
+        <div style="display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;color:var(--muted);margin-bottom:20px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <span style="font-size:14px;">Поиск по конспектам</span>
+        </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Продолжить</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="M32 23c-4.2-4-9.2-5.2-15-3.7v25c5.8-1.5 10.8-.3 15 3.7M32 23c4.2-4 9.2-5.2 15-3.7v25c-5.8-1.5-10.8-.3-15 3.7V23Z" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Литература · Серебряный век</div><div style="font-size:12px;color:var(--muted);">конспект · 12 мин</div></div></div>
+          <div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;"><div style="width:55%;height:100%;background:var(--accent);"></div></div>
+        </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">По предметам</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="m22 42 3.5-10.5L40 17l7 7-14.5 14.5L22 42ZM35.5 21.5l7 7M22 46h25" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Русский язык</div><div style="font-size:12px;color:var(--muted);">24 конспекта</div></div><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-top:1px solid var(--line);"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="M22 43 42 21M23 21h18v22H23zM27 27h10M27 32h10M27 37h5" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Математика</div><div style="font-size:12px;color:var(--muted);">31 конспект</div></div><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-top:1px solid var(--line);"><span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="40" height="40" fill="none" style="transform:scale(.6);"><path d="M27 20h10M29 20v10L21 44a3 3 0 0 0 2.6 4.5h16.8A3 3 0 0 0 43 44l-8-14V20M25 40h14" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Химия</div><div style="font-size:12px;color:var(--muted);">18 конспектов</div></div><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div>
+        </div>
+      </div>
+    </dc-import>
+
+    <!-- ---------- ПРОФИЛЬ + НАСТРОЙКИ ---------- -->
+    <dc-import name="Phone" label="Профиль и настройки" theme="light" tab="profile" hint-size="402px,866px">
+      <div data-screen-label="Профиль" style="height:100%;overflow:hidden;padding:16px 20px 8px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+          <span style="width:60px;height:60px;flex:none;border-radius:999px;background:var(--accent-tint);display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:24px;color:var(--accent-ink);">М</span>
+          <div style="flex:1;"><div style="font-family:var(--font-ui);font-weight:700;font-size:20px;color:var(--ink);">Мурад А.</div><div style="font-size:13px;color:var(--muted);">Магистр · 11 класс · 1240 XP</div></div>
+          <span style="width:40px;height:40px;flex:none;border-radius:12px;background:var(--surface);border:1px solid var(--line-2);display:grid;place-items:center;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ink-2)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M4 12h16"/></svg></span>
+        </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Настройки</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px;"><div style="display:flex;align-items:center;gap:12px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span style="font-size:15px;font-weight:500;color:var(--ink);">Уведомления</span></div><span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex:none;"><span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transform:translateX(20px);box-shadow:0 1px 2px rgba(0,0,0,.2);"></span></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px;border-top:1px solid var(--line);"><div style="display:flex;align-items:center;gap:12px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z"/></svg><span style="font-size:15px;font-weight:500;color:var(--ink);">Тёмная тема</span></div><span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--line-2);flex:none;"><span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></span></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px;border-top:1px solid var(--line);"><div style="display:flex;align-items:center;gap:12px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M5 8l6 4 6-4M5 8v8l7 4 7-4V8M5 8l7-4 7 4"/></svg><span style="font-size:15px;font-weight:500;color:var(--ink);">Цель на день</span></div><span style="font-size:14px;font-weight:600;color:var(--muted);">45 XP <span style="color:var(--accent-ink);">›</span></span></div>
+        </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Аккаунт</div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px;"><span style="font-size:15px;font-weight:500;color:var(--ink);">Профиль и класс</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px;border-top:1px solid var(--line);"><span style="font-size:15px;font-weight:500;color:var(--ink);">Помощь и поддержка</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div>
+          <div style="display:flex;align-items:center;padding:15px;border-top:1px solid var(--line);"><span style="font-size:15px;font-weight:600;color:var(--danger);">Выйти</span></div>
+        </div>
+      </div>
+    </dc-import>
+
+  </div>
+
+  <!-- ===================== ДЕСКТОП ===================== -->
+  <div style="text-align:center;margin:72px 0 28px;"><span style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9A8C7C;">Десктоп · боковая панель</span></div>
+  <div style="display:flex;justify-content:center;">
+    <div style="width:1180px;max-width:96vw;border-radius:24px;overflow:hidden;box-shadow:0 44px 90px -50px rgba(60,40,20,.5),0 2px 6px rgba(0,0,0,.06);border:1px solid var(--line);">
+      <div data-theme="light" data-screen-label="Десктоп" style="display:flex;background:var(--bg);color:var(--ink);font-family:var(--font-ui);height:760px;">
+        <!-- sidebar -->
+        <aside style="width:248px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:24px 16px;">
+          <div style="font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);padding:0 12px;margin-bottom:28px;">стадифай</div>
+          <nav style="display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--accent-tint);color:var(--accent-ink);font-weight:600;font-size:15px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7M6 10v10h12V10"/></svg>Главная</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;color:var(--ink-2);font-weight:500;font-size:15px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h11M8 12h11M8 18h11M4 6l.01 0M4 12l.01 0M4 18l.01 0"/></svg>Задания</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;color:var(--ink-2);font-weight:500;font-size:15px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>Прогресс</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;color:var(--ink-2);font-weight:500;font-size:15px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H18v16H6.5A1.5 1.5 0 0 1 5 18.5ZM5 16.5A1.5 1.5 0 0 1 6.5 15H18"/></svg>Материалы</div>
+          </nav>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface-2);"><span style="width:38px;height:38px;flex:none;border-radius:999px;background:var(--accent-tint);display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--accent-ink);">М</span><div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:600;color:var(--ink);">Мурад А.</div><div style="font-size:12px;color:var(--muted);">Магистр · 1240 XP</div></div></div>
+        </aside>
+        <!-- main -->
+        <main style="flex:1;overflow:hidden;padding:32px 36px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;">
+            <div><h1 style="font-family:var(--font-display);font-weight:600;font-size:30px;letter-spacing:-.01em;color:var(--ink);margin:0 0 6px;">Привет, <span style="color:var(--accent);">Мурад</span></h1><p style="font-size:15px;color:var(--muted);margin:0;">До ЕГЭ 65 дней · сегодня 3 цели · серия 25 дней</p></div>
+            <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;color:var(--muted);width:280px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><span style="font-size:14px;">Найти тест или материал</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;"><h2 style="font-weight:700;font-size:18px;color:var(--ink);margin:0;">Сегодняшний план</h2><span style="font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--accent-tint);color:var(--accent-ink);">+45 XP</span></div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(40,26,12,.05);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:14px;padding:16px;"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="m22 42 3.5-10.5L40 17l7 7-14.5 14.5L22 42ZM35.5 21.5l7 7M22 46h25" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">Русский язык</div><div style="font-size:12px;color:var(--muted);">10 заданий · 20 XP</div></div><span style="width:22px;height:22px;border-radius:999px;border:2px solid var(--line-2);flex:none;"></span></div>
+                <div style="display:flex;align-items:center;gap:14px;padding:16px;border-top:1px solid var(--line);"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="m18 26 14-8 14 8H18ZM21 30h22M24 30v13M32 30v13M40 30v13M20 43h24M17 47h30" stroke="var(--ink-2)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--ink);">История</div><div style="font-size:12px;color:var(--muted);">5 карточек · 10 XP</div></div><span style="width:22px;height:22px;border-radius:999px;border:2px solid var(--line-2);flex:none;"></span></div>
+                <div style="display:flex;align-items:center;gap:14px;padding:16px;border-top:1px solid var(--line);"><span style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--accent-tint);display:grid;place-items:center;"><svg viewBox="0 0 64 64" width="44" height="44" fill="none" style="transform:scale(.58);"><path d="M21 24h22M21 32h22M21 40h22M25 21v6M39 29v6" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2);">Математика</div><div style="font-size:12px;color:var(--muted);">3 задачи · 15 XP</div></div><span style="width:22px;height:22px;border-radius:999px;background:var(--accent);flex:none;position:relative;"><span style="position:absolute;inset:0;margin:auto;width:10px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg);"></span></span></div>
+              </div>
+              <button style="width:100%;min-height:50px;margin-top:16px;font-weight:600;font-size:16px;border-radius:12px;background:var(--accent);color:var(--on-accent);">Продолжить подготовку</button>
+            </div>
+            <div style="background:var(--ink-card);border-radius:22px;padding:24px;display:flex;flex-direction:column;box-shadow:0 18px 40px -26px rgba(70,44,20,.45);">
+              <div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;">Ближайшая цель</div>
+              <div style="position:relative;width:120px;height:120px;margin:8px auto 18px;"><svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg);"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(244,238,231,.16)" stroke-width="9"/><circle cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="104.5"/></svg><span style="position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;font-size:30px;color:var(--on-card);font-variant-numeric:tabular-nums;">68%</span></div>
+              <div style="text-align:center;font-weight:700;font-size:17px;color:var(--on-card);margin-bottom:4px;">До «Профессора»</div>
+              <div style="text-align:center;font-size:13px;color:var(--on-card-mut);margin-bottom:20px;">осталось 80 XP — два блока</div>
+              <div style="margin-top:auto;display:flex;gap:10px;">
+                <div style="flex:1;text-align:center;padding:12px 0;border-radius:12px;background:rgba(244,238,231,.06);"><div style="font-family:var(--font-display);font-weight:600;font-size:20px;color:var(--on-card);">25</div><div style="font-size:11px;color:var(--on-card-mut);margin-top:3px;">серия</div></div>
+                <div style="flex:1;text-align:center;padding:12px 0;border-radius:12px;background:rgba(244,238,231,.06);"><div style="font-family:var(--font-display);font-weight:600;font-size:20px;color:var(--on-card);">312</div><div style="font-size:11px;color:var(--on-card-mut);margin-top:3px;">решено</div></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
