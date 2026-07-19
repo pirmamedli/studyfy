@@ -1,0 +1,13 @@
+{
+  "id": "daty",
+  "section": "flashcards",
+  "subjectId": "history",
+  "topicId": "history-dates-1825-1914",
+  "title": "Даты",
+  "description": "Набор карточек · 3 шт.",
+  "cards": [
+    { "front": "1921", "back": "а" },
+    { "front": "1945", "back": "б" },
+    { "front": "1222", "back": "з" }
+  ]
+}

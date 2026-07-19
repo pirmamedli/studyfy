@@ -1,0 +1,11 @@
+{
+  "id": "speed-math-note",
+  "section": "notes",
+  "subjectId": "basic-math",
+  "topicId": "math-speed-distance-time",
+  "title": "Скорость, время, расстояние",
+  "description": "Мини-конспект по текстовым задачам.",
+  "blocks": [
+    { "type": "list", "items": ["S = v × t", "v = S ÷ t", "t = S ÷ v", "Следи, чтобы единицы измерения совпадали"] }
+  ]
+}

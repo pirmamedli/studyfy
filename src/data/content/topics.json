@@ -1,0 +1,14 @@
+[
+  { "id": "english-future-perfect", "subjectId": "english", "title": "Future Perfect" },
+  { "id": "history-palace-coups", "subjectId": "history", "title": "Эпоха дворцовых переворотов" },
+  { "id": "history-dates-1825-1914", "subjectId": "history", "title": "Даты 1825–1914 гг." },
+  { "id": "social-constitutional-law", "subjectId": "social", "title": "Конституционное право" },
+  { "id": "social-state-and-law", "subjectId": "social", "title": "Государство и право" },
+  { "id": "russian-orthoepy", "subjectId": "russian", "title": "Орфоэпия" },
+  { "id": "russian-orthography", "subjectId": "russian", "title": "Орфография" },
+  { "id": "russian-roots", "subjectId": "russian", "title": "Правописание корней" },
+  { "id": "russian-prefixes", "subjectId": "russian", "title": "Правописание приставок" },
+  { "id": "russian-suffixes", "subjectId": "russian", "title": "Правописание суффиксов" },
+  { "id": "russian-punctuation-detached-members", "subjectId": "russian", "title": "Обособленные члены предложения" },
+  { "id": "math-speed-distance-time", "subjectId": "basic-math", "title": "Скорость, время и расстояние" }
+]

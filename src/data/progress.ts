@@ -1,38 +1,49 @@
-import type {
-  CalendarActivity,
-  SubjectId,
-  TestAttempt,
-  TopicId,
-  UserState,
-} from "./types";
+import type { Mistake, SubjectId, UserState } from "./types";
 import { rankForXp, type RankProgress } from "./ranks";
-import { SUBJECTS, TESTS, TOPICS, getTopic, subjectTitle } from "./content";
-import { addDays, daysBetween, today } from "../lib/date";
+import { SUBJECTS, TESTS, getTest, subjectTitle } from "./content";
+import { FOCUS_BONUS_XP, normalizeLives } from "./store";
+import { daysBetween, today } from "../lib/date";
 
 export interface SubjectProgress {
   subjectId: SubjectId;
   title: string;
   icon: string;
-  /** 0..100 средняя готовность по тестам предмета */
+  /** 0..100 готовность = пройдено тестов / всего */
   percent: number;
-  /** сколько заданий (попыток) выполнено по предмету */
+  /** 0..100 точность по пройденным тестам */
+  accuracy: number;
+  completed: number;
+  total: number;
   doneTasks: number;
-  totalTests: number;
-  passedTests: number;
+  mistakes: number;
 }
 
 export interface WeakTopic {
-  topicId: TopicId;
-  title: string;
+  topic: string;
   subjectId: SubjectId;
   subjectTitle: string;
   icon: string;
-  accuracy: number; // 0..100
-  wrong: number;
-  total: number;
+  count: number;
+  testId?: string;
 }
 
-export interface DayPlanItem extends CalendarActivity {
+export interface FocusPlanItem {
+  testId: string;
+  title: string;
+  subjectId: SubjectId;
+  icon: string;
+  xp: number;
+  done: boolean;
+}
+
+export interface UpcomingItem {
+  id: string;
+  title: string;
+  subjectId: SubjectId;
+  date: string;
+  xp: number;
+  testId?: string;
+  kind: string;
   done: boolean;
 }
 
@@ -40,200 +51,137 @@ export interface Derived {
   totalXp: number;
   rank: RankProgress;
   streak: number;
-  attemptsCompleted: number;
-  solvedTasks: number;
-  testsPassed: number;
+  tasksDone: number;
+  testsDone: number;
   correctTotal: number;
   incorrectTotal: number;
-  accuracy: number; // 0..100
-  overallPercent: number; // средняя готовность по выбранным предметам
+  accuracy: number;
+  overallPercent: number;
   daysToExam: number;
-  xpToday: number;
-  goalXp: number;
-  goalPercent: number; // 0..100 выполнение дневной цели
+  lives: number;
+  dailyLivesLimit: number;
+  unlimitedLives: boolean;
   subjects: SubjectProgress[];
   weakTopics: WeakTopic[];
-  todayPlan: DayPlanItem[];
-  upcoming: DayPlanItem[];
+  todayPlan: FocusPlanItem[];
+  focusComplete: boolean;
+  focusBonusEarned: boolean;
+  focusBonusXp: number;
+  upcoming: UpcomingItem[];
+  favoritesCount: number;
 }
 
-function completedAttempts(state: UserState): TestAttempt[] {
-  return state.attempts.filter((a) => a.completed);
-}
-
-/** Лучший результат (%) по каждому тесту. */
-function bestPercentByTest(state: UserState): Map<string, number> {
-  const map = new Map<string, number>();
-  for (const a of completedAttempts(state)) {
-    map.set(a.testId, Math.max(map.get(a.testId) ?? 0, a.percent));
-  }
-  return map;
-}
-
-export function computeStreak(activeDays: Record<string, boolean>): number {
-  // серия — подряд идущие активные дни, заканчивающиеся сегодня или вчера
-  let cursor = today();
-  if (!activeDays[cursor]) {
-    cursor = addDays(cursor, -1);
-    if (!activeDays[cursor]) return 0;
-  }
-  let streak = 0;
-  while (activeDays[cursor]) {
-    streak += 1;
-    cursor = addDays(cursor, -1);
-  }
-  return streak;
-}
-
-function subjectProgress(
-  subjectId: SubjectId,
-  best: Map<string, number>,
-  attempts: TestAttempt[],
-): SubjectProgress {
+function subjectProgress(subjectId: SubjectId, state: UserState): SubjectProgress {
   const tests = TESTS.filter((t) => t.subjectId === subjectId);
-  const totalTests = tests.length;
-  const sum = tests.reduce((acc, t) => acc + (best.get(t.id) ?? 0), 0);
-  const percent = totalTests ? Math.round(sum / totalTests) : 0;
-  const passedTests = tests.filter((t) => (best.get(t.id) ?? 0) > 0).length;
-  const doneTasks = attempts.filter((a) => a.subjectId === subjectId).length;
+  const completedList = tests.filter((t) => state.completedTests[t.id]);
+  const correct = completedList.reduce((s, t) => s + (state.completedTests[t.id]?.bestCorrect ?? 0), 0);
+  const totalQ = completedList.reduce((s, t) => s + (state.completedTests[t.id]?.questionCount ?? 0), 0);
+  const percent = tests.length ? Math.round((completedList.length / tests.length) * 100) : 0;
+  const accuracy = totalQ ? Math.round((correct / totalQ) * 100) : 0;
   const subj = SUBJECTS.find((s) => s.id === subjectId);
   return {
     subjectId,
     title: subj?.title ?? subjectId,
     icon: subj?.icon ?? subjectId,
     percent,
-    doneTasks,
-    totalTests,
-    passedTests,
+    accuracy,
+    completed: completedList.length,
+    total: tests.length,
+    doneTasks: completedList.length,
+    mistakes: state.mistakes.filter((m) => m.subjectId === subjectId).length,
   };
 }
 
 function weakTopics(state: UserState): WeakTopic[] {
-  const attempts = completedAttempts(state);
-  const agg = new Map<TopicId, { wrong: number; total: number }>();
-  for (const a of attempts) {
-    const cur = agg.get(a.topicId) ?? { wrong: 0, total: 0 };
-    cur.total += a.total;
-    cur.wrong += a.total - a.correctCount;
-    agg.set(a.topicId, cur);
+  const agg = new Map<string, WeakTopic>();
+  for (const m of state.mistakes) {
+    const key = `${m.subjectId}:${m.topic}`;
+    const subj = SUBJECTS.find((s) => s.id === m.subjectId);
+    const cur = agg.get(key) ?? {
+      topic: m.topic,
+      subjectId: m.subjectId,
+      subjectTitle: subjectTitle(m.subjectId),
+      icon: subj?.icon ?? "basic-math",
+      count: 0,
+      testId: m.testId,
+    };
+    cur.count += 1;
+    agg.set(key, cur);
   }
-  const weak: WeakTopic[] = [];
-  for (const [topicId, s] of agg) {
-    if (s.total === 0) continue;
-    const accuracy = Math.round(((s.total - s.wrong) / s.total) * 100);
-    // слабая тема: есть заметные ошибки и точность ниже 70%
-    if (s.wrong >= 2 && accuracy < 70) {
-      const topic = getTopic(topicId);
-      const subj = SUBJECTS.find((x) => x.id === topic?.subjectId);
-      weak.push({
-        topicId,
-        title: topic?.title ?? topicId,
-        subjectId: topic?.subjectId ?? "",
-        subjectTitle: topic ? subjectTitle(topic.subjectId) : "",
-        icon: subj?.icon ?? "basic-math",
-        accuracy,
-        wrong: s.wrong,
-        total: s.total,
-      });
-    }
-  }
-  return weak.sort((a, b) => a.accuracy - b.accuracy);
+  return [...agg.values()].sort((a, b) => b.count - a.count);
 }
 
 export function computeDerived(state: UserState): Derived {
-  const attempts = completedAttempts(state);
-  const best = bestPercentByTest(state);
-  const totalXp = state.xp.reduce((acc, x) => acc + x.amount, 0);
-  const rank = rankForXp(totalXp);
-
-  const correctTotal = attempts.reduce((acc, a) => acc + a.correctCount, 0);
-  const answeredTotal = attempts.reduce((acc, a) => acc + a.total, 0);
-  const incorrectTotal = answeredTotal - correctTotal;
-  const accuracy = answeredTotal
-    ? Math.round((correctTotal / answeredTotal) * 100)
-    : 0;
+  const lives = normalizeLives(state);
+  const rank = rankForXp(state.xp);
+  const answered = state.correct + state.wrong;
+  const accuracy = answered ? Math.round((state.correct / answered) * 100) : 0;
 
   const selected = state.profile.subjectIds.length
     ? state.profile.subjectIds
     : SUBJECTS.map((s) => s.id);
-  const subjects = selected.map((id) => subjectProgress(id, best, attempts));
+  const subjects = selected.map((id) => subjectProgress(id, state));
   const overallPercent = subjects.length
     ? Math.round(subjects.reduce((a, s) => a + s.percent, 0) / subjects.length)
     : 0;
 
-  const t = today();
-  const xpToday = state.xp
-    .filter((x) => x.at.slice(0, 10) === t)
-    .reduce((acc, x) => acc + x.amount, 0);
-  const goalXp = state.profile.dailyGoalXp;
-  const goalPercent = goalXp ? Math.min(100, Math.round((xpToday / goalXp) * 100)) : 0;
+  const todayPlan: FocusPlanItem[] = state.focusIds
+    .map((f) => {
+      const test = getTest(f.id);
+      if (!test) return null;
+      const subj = SUBJECTS.find((s) => s.id === test.subjectId);
+      return {
+        testId: test.id,
+        title: test.title,
+        subjectId: test.subjectId,
+        icon: subj?.icon ?? "basic-math",
+        xp: test.xpReward,
+        done: Boolean(state.completedTests[test.id]),
+      };
+    })
+    .filter((x): x is FocusPlanItem => x !== null);
+  const focusComplete = todayPlan.length > 0 && todayPlan.every((p) => p.done);
 
-  const withDone = (a: CalendarActivity): DayPlanItem => ({
-    ...a,
-    done: a.status === "done",
-  });
-  const todayPlan = state.activities.filter((a) => a.date === t).map(withDone);
-  const upcoming = state.activities
+  const t = today();
+  const upcoming: UpcomingItem[] = state.activities
     .filter((a) => a.date > t)
     .sort((x, y) => x.date.localeCompare(y.date))
-    .map(withDone);
-
-  const daysToExam = Math.max(0, daysBetween(t, state.profile.examDate));
+    .map((a) => ({
+      id: a.id,
+      title: a.title,
+      subjectId: a.subjectId,
+      date: a.date,
+      xp: a.xp,
+      testId: a.testId,
+      kind: a.kind,
+      done: a.status === "done",
+    }));
 
   return {
-    totalXp,
+    totalXp: state.xp,
     rank,
-    streak: computeStreak(state.activeDays),
-    attemptsCompleted: attempts.length,
-    solvedTasks: attempts.length,
-    testsPassed: best.size,
-    correctTotal,
-    incorrectTotal,
+    streak: state.streak,
+    tasksDone: state.tasksDone,
+    testsDone: state.testsDone,
+    correctTotal: state.correct,
+    incorrectTotal: state.wrong,
     accuracy,
     overallPercent,
-    daysToExam,
-    xpToday,
-    goalXp,
-    goalPercent,
+    daysToExam: Math.max(0, daysBetween(t, state.profile.examDate)),
+    lives: lives.lives,
+    dailyLivesLimit: state.dailyLivesLimit,
+    unlimitedLives: state.unlimitedLives,
     subjects,
     weakTopics: weakTopics(state),
     todayPlan,
+    focusComplete,
+    focusBonusEarned: state.focusBonusEarned,
+    focusBonusXp: FOCUS_BONUS_XP,
     upcoming,
+    favoritesCount: state.favorites.length,
   };
 }
 
-/** Ошибки для повторения: список неверно отвеченных вопросов из попыток. */
-export interface MistakeItem {
-  testId: string;
-  subjectId: SubjectId;
-  topicTitle: string;
-  question: string;
-  correctAnswer: string;
-  chosenAnswer: string | null;
-  at: string;
+export function collectMistakes(state: UserState): Mistake[] {
+  return [...state.mistakes].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
-
-export function collectMistakes(state: UserState): MistakeItem[] {
-  const items: MistakeItem[] = [];
-  for (const a of completedAttempts(state)) {
-    const test = TESTS.find((t) => t.id === a.testId);
-    if (!test) continue;
-    for (const ans of a.answers) {
-      if (ans.correct) continue;
-      const q = test.questions[ans.questionIndex];
-      if (!q) continue;
-      items.push({
-        testId: test.id,
-        subjectId: test.subjectId,
-        topicTitle: test.topicTitle,
-        question: q.question,
-        correctAnswer: q.answers[q.correct],
-        chosenAnswer: ans.selected != null ? q.answers[ans.selected] : null,
-        at: a.finishedAt ?? a.startedAt,
-      });
-    }
-  }
-  return items.sort((x, y) => y.at.localeCompare(x.at));
-}
-
-export const ALL_TOPICS = TOPICS;

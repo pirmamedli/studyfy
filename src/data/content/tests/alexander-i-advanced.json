@@ -1,0 +1,37 @@
+{
+  "id": "alexander-i-advanced",
+  "subjectId": "english",
+  "title": "Future Perfect",
+  "subtitle": "Английский язык",
+  "resultTitle": "Future Perfect стал понятнее",
+  "xpReward": 20,
+  "topicId": "english-future-perfect",
+  "topicTitle": "Future Perfect",
+  "questions": [
+    {
+      "type": "single-choice",
+      "question": "Выберите правильную форму: By 6 pm, I ___ my homework.",
+      "hint": "Future Perfect: will have + V3.",
+      "answers": ["will finish", "will have finished", "finished"],
+      "correct": 1
+    },
+    {
+      "type": "single-choice",
+      "question": "Как переводится смысл Future Perfect?",
+      "hint": "Future Perfect показывает результат к определенному моменту в будущем.",
+      "answers": [
+        "Действие завершится к моменту в будущем",
+        "Действие происходит сейчас",
+        "Действие было давно"
+      ],
+      "correct": 0
+    },
+    {
+      "type": "single-choice",
+      "question": "Выберите маркер Future Perfect.",
+      "hint": "By tomorrow задает момент в будущем, к которому действие завершится.",
+      "answers": ["By tomorrow", "Yesterday", "Right now"],
+      "correct": 0
+    }
+  ]
+}

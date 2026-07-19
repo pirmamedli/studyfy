@@ -31,9 +31,9 @@ export function Calendar() {
       <div className="card card-pad" style={{ marginBottom: 20, display: "flex", gap: 16 }}>
         <div style={{ flex: 1 }}>
           <div className="t-num" style={{ fontSize: 22, color: "var(--ink)" }}>
-            {derived.xpToday}
+            {derived.streak}
           </div>
-          <div className="row-sub">XP сегодня из {derived.goalXp}</div>
+          <div className="row-sub">дней серия</div>
         </div>
         <div style={{ width: 1, background: "var(--line)" }} />
         <div style={{ flex: 1 }}>

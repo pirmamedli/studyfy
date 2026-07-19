@@ -47,7 +47,7 @@ export function Progress() {
           <div className="cap">дней серия</div>
         </div>
         <div className="stat-card">
-          <div className="big">{derived.solvedTasks}</div>
+          <div className="big">{derived.tasksDone}</div>
           <div className="cap">решено заданий</div>
         </div>
         <div className="stat-card">
@@ -55,7 +55,7 @@ export function Progress() {
           <div className="cap">точность ответов</div>
         </div>
         <div className="stat-card">
-          <div className="big">{derived.testsPassed}</div>
+          <div className="big">{derived.testsDone}</div>
           <div className="cap">пройдено тестов</div>
         </div>
       </div>

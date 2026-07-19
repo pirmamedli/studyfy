@@ -9,6 +9,7 @@ import { TestRunner } from "./screens/TestRunner";
 import { TestResult } from "./screens/TestResult";
 import { Progress } from "./screens/Progress";
 import { Materials } from "./screens/Materials";
+import { MaterialDetail } from "./screens/MaterialDetail";
 import { Profile } from "./screens/Profile";
 import { Calendar } from "./screens/Calendar";
 import { Mistakes } from "./screens/Mistakes";
@@ -27,6 +28,7 @@ export function App() {
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/materials" element={<Materials />} />
+        <Route path="/material/:id" element={<MaterialDetail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/subject/:id" element={<Subject />} />
         <Route path="/calendar" element={<Calendar />} />
@@ -35,7 +37,7 @@ export function App() {
       </Route>
       <Route element={<FullScreenLayout />}>
         <Route path="/test/:id" element={<TestRunner />} />
-        <Route path="/result/:attemptId" element={<TestResult />} />
+        <Route path="/result/:testId" element={<TestResult />} />
       </Route>
     </Routes>
   );

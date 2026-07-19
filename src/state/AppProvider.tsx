@@ -11,19 +11,24 @@ import {
 import type {
   CalendarActivity,
   NotificationPreference,
+  RetryMode,
   Test,
-  TestAttempt,
-  UserAnswer,
+  TestDraft,
+  TestResultData,
   UserProfile,
   UserState,
 } from "../data/types";
 import {
   LocalStorageRepository,
+  canSolve as canSolveR,
+  clearDraft as clearDraftR,
   completeTest,
   defaultState,
   login as loginR,
   logout as logoutR,
+  saveDraft as saveDraftR,
   setActivityStatus,
+  spendLife as spendLifeR,
   toggleFavorite as toggleFavoriteR,
   updateProfile as updateProfileR,
   wipe,
@@ -34,25 +39,29 @@ import { computeDerived, type Derived } from "../data/progress";
 interface AppContextValue {
   state: UserState;
   derived: Derived;
-  // actions
   login: () => void;
   logout: () => void;
+  spendLife: () => void;
+  canSolve: () => boolean;
+  saveDraft: (testId: string, draft: TestDraft) => void;
+  clearDraft: (testId: string) => void;
   finishTest: (input: {
     test: Test;
-    answers: UserAnswer[];
-    startedAt: string;
-  }) => TestAttempt;
+    answers: unknown[];
+    questionIndices: number[];
+    retryMode: RetryMode;
+  }) => TestResultData;
   toggleFavorite: (testId: string) => void;
   isFavorite: (testId: string) => boolean;
   setActivity: (id: string, status: CalendarActivity["status"]) => void;
   updateProfile: (patch: Partial<UserProfile>) => void;
   updateNotifications: (patch: Partial<NotificationPreference>) => void;
   setTheme: (theme: UserProfile["theme"]) => void;
+  setUnlimitedLives: (on: boolean) => void;
   deleteAccount: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
-
 const repo: StateRepository = new LocalStorageRepository();
 
 function applyTheme(theme: UserProfile["theme"]) {
@@ -71,12 +80,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  // персистентность
   useEffect(() => {
     repo.save(state);
   }, [state]);
 
-  // тема
   useEffect(() => {
     applyTheme(state.profile.theme);
     if (state.profile.theme !== "system") return;
@@ -90,12 +97,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(() => setState((s) => loginR(s)), []);
   const logout = useCallback(() => setState((s) => logoutR(s)), []);
+  const spendLife = useCallback(() => setState((s) => spendLifeR(s)), []);
+  const canSolve = useCallback(() => canSolveR(stateRef.current), []);
+  const saveDraft = useCallback(
+    (testId: string, draft: TestDraft) => setState((s) => saveDraftR(s, testId, draft)),
+    [],
+  );
+  const clearDraft = useCallback((testId: string) => setState((s) => clearDraftR(s, testId)), []);
 
   const finishTest = useCallback(
-    (input: { test: Test; answers: UserAnswer[]; startedAt: string }) => {
-      const { state: next, attempt } = completeTest(stateRef.current, input);
+    (input: { test: Test; answers: unknown[]; questionIndices: number[]; retryMode: RetryMode }) => {
+      const { state: next, result } = completeTest(stateRef.current, input);
       setState(next);
-      return attempt;
+      return result;
     },
     [],
   );
@@ -104,13 +118,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (testId: string) => setState((s) => toggleFavoriteR(s, testId)),
     [],
   );
-  const isFavorite = useCallback(
-    (testId: string) => stateRef.current.favorites.some((f) => f.testId === testId),
-    [],
-  );
+  const isFavorite = useCallback((testId: string) => stateRef.current.favorites.includes(testId), []);
   const setActivity = useCallback(
-    (id: string, status: CalendarActivity["status"]) =>
-      setState((s) => setActivityStatus(s, id, status)),
+    (id: string, status: CalendarActivity["status"]) => setState((s) => setActivityStatus(s, id, status)),
     [],
   );
   const updateProfile = useCallback(
@@ -119,15 +129,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const updateNotifications = useCallback(
     (patch: Partial<NotificationPreference>) =>
-      setState((s) =>
-        updateProfileR(s, {
-          notifications: { ...s.profile.notifications, ...patch },
-        }),
-      ),
+      setState((s) => updateProfileR(s, { notifications: { ...s.profile.notifications, ...patch } })),
     [],
   );
   const setTheme = useCallback(
     (theme: UserProfile["theme"]) => setState((s) => updateProfileR(s, { theme })),
+    [],
+  );
+  const setUnlimitedLives = useCallback(
+    (on: boolean) => setState((s) => ({ ...s, unlimitedLives: on })),
     [],
   );
   const deleteAccount = useCallback(() => setState(wipe()), []);
@@ -137,6 +147,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     derived,
     login,
     logout,
+    spendLife,
+    canSolve,
+    saveDraft,
+    clearDraft,
     finishTest,
     toggleFavorite,
     isFavorite,
@@ -144,6 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateProfile,
     updateNotifications,
     setTheme,
+    setUnlimitedLives,
     deleteAccount,
   };
 

@@ -9,7 +9,6 @@ import {
   getSubject,
   getTest,
   materialsForSubject,
-  testsForTopic,
 } from "../data/content";
 
 export function Materials() {
@@ -31,7 +30,7 @@ export function Materials() {
   );
 
   const favTests = state.favorites
-    .map((f) => getTest(f.testId))
+    .map((tid) => getTest(tid))
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
   const subjectsWithMaterials = SUBJECTS.filter(
@@ -58,27 +57,24 @@ export function Materials() {
         <>
           <div className="eyebrow eyebrow--accent">Мои слабые темы</div>
           <div className="list" style={{ marginBottom: 22 }}>
-            {derived.weakTopics.map((w) => {
-              const relatedTest = testsForTopic(w.topicId)[0];
-              return (
-                <button
-                  key={w.topicId}
-                  className="list-row"
-                  onClick={() =>
-                    relatedTest ? nav(`/test/${relatedTest.id}`) : nav(`/subject/${w.subjectId}`)
-                  }
-                >
-                  <SubjectTile icon={w.icon} active />
-                  <div style={{ flex: 1 }}>
-                    <div className="row-title">{w.title}</div>
-                    <div className="row-sub">
-                      {w.subjectTitle} · точность {w.accuracy}%
-                    </div>
+            {derived.weakTopics.map((w) => (
+              <button
+                key={`${w.subjectId}:${w.topic}`}
+                className="list-row"
+                onClick={() =>
+                  w.testId ? nav(`/test/${w.testId}?mode=mistakes`) : nav(`/subject/${w.subjectId}`)
+                }
+              >
+                <SubjectTile icon={w.icon} active />
+                <div style={{ flex: 1 }}>
+                  <div className="row-title">{w.topic}</div>
+                  <div className="row-sub">
+                    {w.subjectTitle} · ошибок {w.count}
                   </div>
-                  <Icon name="chevron-right" size={20} className="row-chev" />
-                </button>
-              );
-            })}
+                </div>
+                <Icon name="refresh" size={20} className="row-chev" />
+              </button>
+            ))}
           </div>
         </>
       )}
@@ -127,15 +123,16 @@ export function Materials() {
       ) : (
         <div className="list">
           {filtered.map((m) => (
-            <div key={m.id} className="list-row">
+            <Link key={m.id} to={`/material/${m.id}`} className="list-row">
               <span className="row-lead">
-                <Icon name={m.kind === "flashcards" ? "cards" : "book"} size={20} />
+                <Icon name={m.section === "flashcards" ? "cards" : "book"} size={20} />
               </span>
               <div style={{ flex: 1 }}>
                 <div className="row-title">{m.title}</div>
-                <div className="row-sub">{m.subtitle}</div>
+                <div className="row-sub">{m.description ?? m.subtitle}</div>
               </div>
-            </div>
+              <Icon name="chevron-right" size={20} className="row-chev" />
+            </Link>
           ))}
           {filtered.length === 0 && (
             <div className="list-row empty" style={{ justifyContent: "center" }}>

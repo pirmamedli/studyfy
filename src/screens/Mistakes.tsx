@@ -52,7 +52,7 @@ export function Mistakes() {
                   Верно: {m.correctAnswer}
                 </div>
                 <div className="row-sub">
-                  {getSubject(m.subjectId)?.title} · {m.topicTitle}
+                  {getSubject(m.subjectId)?.title} · {m.topic}
                 </div>
               </div>
             </button>

@@ -157,7 +157,7 @@ export function Profile() {
           <Icon name="target" size={20} style={{ color: "var(--ink-2)" }} />
           <span className="row-title" style={{ flex: 1 }}>Цель на день</span>
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--muted)" }}>
-            {p.dailyGoalXp} XP · выполнено {derived.goalPercent}%
+            {p.dailyGoalXp} XP
           </span>
         </div>
       </div>
