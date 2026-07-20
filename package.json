@@ -18,7 +18,8 @@
     "supabase:db:push": "supabase db push",
     "supabase:db:pull": "supabase db pull",
     "supabase:db:reset": "supabase db reset",
-    "commit:auto": "node scripts/auto-commit.mjs"
+    "commit:auto": "node scripts/auto-commit.mjs",
+    "deploy": "node scripts/deploy.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
