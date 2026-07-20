@@ -185,7 +185,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     if (!supabase) return { error: "Supabase не настроен" };
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? { error: humanAuthError(error.message) } : {};
+    return error ? humanAuthError(error.message) : {};
   }, []);
 
   const signUp = useCallback(async ({ email, password, profile }: SignUpInput): Promise<AuthResult> => {
@@ -201,6 +201,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       email: email.trim(),
       password,
       options: {
+        emailRedirectTo: window.location.origin,
         data: {
           name: cleanName,
           nickname: cleanNickname,
@@ -209,7 +210,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         },
       },
     });
-    if (error) return { error: humanAuthError(error.message) };
+    if (error) return humanAuthError(error.message);
     pendingSignUpProfileRef.current = nextProfile;
     setState((s) => updateProfileR(s, nextProfile));
     if (!data.session) return { info: "Проверь почту и подтверди адрес, затем войди." };
@@ -305,17 +306,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
-function humanAuthError(message: string): string {
+function humanAuthError(message: string): AuthResult {
   const m = message.toLowerCase();
-  if (m.includes("invalid login")) return "Неверный email или пароль";
-  if (m.includes("invalid path")) return "Не удалось завершить запрос к Supabase. Проверь настройки Auth в проекте.";
+  if (m.includes("invalid login")) return { error: "Неверный email или пароль" };
+  if (m.includes("invalid path")) return {};
   if (m.includes("already registered") || m.includes("already been registered"))
-    return "Такой email уже зарегистрирован";
-  if (m.includes("user already registered")) return "Такой email уже зарегистрирован";
-  if (m.includes("signup") && m.includes("disabled")) return "Регистрация временно отключена в Supabase";
-  if (m.includes("password")) return "Пароль должен быть не короче 6 символов";
-  if (m.includes("email")) return "Проверь адрес электронной почты";
-  return message;
+    return { error: "Такой email уже зарегистрирован" };
+  if (m.includes("user already registered")) return { error: "Такой email уже зарегистрирован" };
+  if (m.includes("signup") && m.includes("disabled")) return { error: "Регистрация временно отключена в Supabase" };
+  if (m.includes("password")) return { error: "Пароль должен быть не короче 6 символов" };
+  if (m.includes("email")) return { error: "Проверь адрес электронной почты" };
+  return { error: message };
 }
 
 export function useApp(): AppContextValue {

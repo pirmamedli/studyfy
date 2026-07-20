@@ -38,7 +38,6 @@ function SupabaseAuth() {
   const [nickname, setNickname] = useState("");
   const [grade, setGrade] = useState(11);
   const [subjectIds, setSubjectIds] = useState(["russian", "basic-math", "history"]);
-  const [dailyGoalXp, setDailyGoalXp] = useState(45);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRepeat, setPasswordRepeat] = useState("");
@@ -94,7 +93,6 @@ function SupabaseAuth() {
             nickname: nickname || name,
             grade,
             subjectIds,
-            dailyGoalXp,
             examDate: examDateForGrade(grade),
           },
         })
@@ -105,6 +103,7 @@ function SupabaseAuth() {
   }
 
   function toggleSubject(id: string) {
+    setErr("");
     setSubjectIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   }
 
@@ -177,26 +176,13 @@ function SupabaseAuth() {
             <span className="field-label">Никнейм</span>
             <input className="input" placeholder="Можно оставить пустым" value={nickname} onChange={(e) => setNickname(e.target.value)} />
           </label>
-          <div style={{ display: "flex", gap: 12 }}>
-            <label className="field" style={{ flex: 1 }}>
-              <span className="field-label">Класс</span>
-              <select className="input" value={grade} onChange={(e) => setGrade(Number(e.target.value))}>
-                <option value={10}>10 класс</option>
-                <option value={11}>11 класс</option>
-              </select>
-            </label>
-            <label className="field" style={{ flex: 1 }}>
-              <span className="field-label">Цель XP / день</span>
-              <input
-                className="input"
-                type="number"
-                min={10}
-                step={5}
-                value={dailyGoalXp}
-                onChange={(e) => setDailyGoalXp(Number(e.target.value) || 45)}
-              />
-            </label>
-          </div>
+          <label className="field">
+            <span className="field-label">Класс</span>
+            <select className="input" value={grade} onChange={(e) => setGrade(Number(e.target.value))}>
+              <option value={10}>10 класс</option>
+              <option value={11}>11 класс</option>
+            </select>
+          </label>
         </>
       )}
 
