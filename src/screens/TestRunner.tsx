@@ -92,6 +92,11 @@ export function TestRunner() {
     setPos(np);
   };
 
+  const exitTest = () => {
+    persist(answersRef.current, confirmedRef.current, pos);
+    nav(`/subject/${test.subjectId}`);
+  };
+
   const finish = () => {
     const result = finishTest({ test, answers: answersRef.current, questionIndices: order, retryMode });
     nav(`/result/${test.id}`, { replace: true, state: { result } });
@@ -99,10 +104,10 @@ export function TestRunner() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
-      {/* верхняя панель: назад · прогресс · счётчик · жизни */}
+      {/* верхняя панель: выход · прогресс · счётчик · жизни */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-        <button className="icon-btn" onClick={() => go(-1)} aria-label="Назад">
-          <Icon name="chevron-left" size={20} />
+        <button className="icon-btn" onClick={exitTest} aria-label="Выйти из теста">
+          <Icon name="close" size={20} />
         </button>
         <div className="progress-track" style={{ flex: 1 }}>
           <div className="progress-fill" style={{ width: `${progress}%` }} />

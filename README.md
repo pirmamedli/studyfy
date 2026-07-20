@@ -9,9 +9,10 @@
 - **React 18 + TypeScript + Vite**
 - **React Router** — навигация (5 разделов + внутренние экраны)
 - **vite-plugin-pwa** — установка на домашний экран, офлайн, service worker
-- **Local-first** — состояние в `localStorage` через заменяемый репозиторий
-  (`src/data/store.ts`). Абстракция `StateRepository` позволяет позже без боли
-  перейти на Supabase.
+- **Local-first + Supabase** — прогресс хранится в `localStorage` (офлайн-кэш) и
+  синхронизируется с Supabase, когда заданы переменные окружения. Вход по
+  email/паролю (Supabase Auth), данные — в таблице с RLS. Без переменных —
+  чистый local-first режим с входом по коду доступа. Подробнее: [SUPABASE.md](SUPABASE.md).
 
 ## Ключевой принцип архитектуры
 

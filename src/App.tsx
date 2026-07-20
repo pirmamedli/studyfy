@@ -14,10 +14,26 @@ import { Profile } from "./screens/Profile";
 import { Calendar } from "./screens/Calendar";
 import { Mistakes } from "./screens/Mistakes";
 
-export function App() {
-  const { state } = useApp();
+function Splash() {
+  return (
+    <div className="app">
+      <div className="viewport">
+        <main className="screen" style={{ display: "grid", placeItems: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <div className="brandmark" style={{ marginBottom: 12 }}>стадифай</div>
+            <div className="t-caption">Загрузка…</div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
 
-  if (!state.authed) {
+export function App() {
+  const { authed, authReady, syncing } = useApp();
+
+  if (!authReady || syncing) return <Splash />;
+  if (!authed) {
     return <Onboarding />;
   }
 
