@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useApp } from "../state/AppProvider";
+import { SUBJECTS } from "../data/content";
+import { examDateForGrade } from "../data/store";
 
 export function Onboarding() {
   const { supabaseEnabled } = useApp();
@@ -31,28 +33,79 @@ export function Onboarding() {
 function SupabaseAuth() {
   const { signIn, signUp } = useApp();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [grade, setGrade] = useState(11);
+  const [subjectIds, setSubjectIds] = useState(["russian", "basic-math", "history"]);
+  const [dailyGoalXp, setDailyGoalXp] = useState(45);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRepeat, setPasswordRepeat] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
 
   const isSignup = mode === "signup";
 
+  function switchMode(nextMode: "signin" | "signup") {
+    setMode(nextMode);
+    setStep(1);
+    setErr("");
+    setInfo("");
+  }
+
+  function validateAccount() {
+    if (!email.includes("@")) return "Введи корректный email";
+    if (password.length < 6) return "Пароль не короче 6 символов";
+    if (isSignup && password !== passwordRepeat) return "Пароли не совпадают";
+    return "";
+  }
+
+  function nextStep() {
+    setErr("");
+    setInfo("");
+    if (step === 1) {
+      const accountError = validateAccount();
+      if (accountError) return setErr(accountError);
+      setStep(2);
+      return;
+    }
+    if (step === 2) {
+      if (!name.trim()) return setErr("Введи имя");
+      setStep(3);
+    }
+  }
+
   async function submit() {
     setErr("");
     setInfo("");
-    if (!email.includes("@")) return setErr("Введи корректный email");
-    if (password.length < 6) return setErr("Пароль не короче 6 символов");
+    const accountError = validateAccount();
+    if (accountError) return setErr(accountError);
+    if (isSignup && !name.trim()) return setErr("Введи имя");
+    if (isSignup && subjectIds.length === 0) return setErr("Выбери хотя бы один предмет");
     setBusy(true);
-    const res = isSignup ? await signUp(email, password, name) : await signIn(email, password);
+    const res = isSignup
+      ? await signUp({
+          email,
+          password,
+          profile: {
+            name,
+            nickname: nickname || name,
+            grade,
+            subjectIds,
+            dailyGoalXp,
+            examDate: examDateForGrade(grade),
+          },
+        })
+      : await signIn(email, password);
     setBusy(false);
-    if (res.error) {
-      // сообщение о подтверждении почты — не ошибка входа
-      if (res.error.startsWith("Проверь почту")) setInfo(res.error);
-      else setErr(res.error);
-    }
+    if (res.error) setErr(res.error);
+    if (res.info) setInfo(res.info);
+  }
+
+  function toggleSubject(id: string) {
+    setSubjectIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   }
 
   return (
@@ -61,50 +114,136 @@ function SupabaseAuth() {
         {isSignup ? "Создать аккаунт" : "С возвращением"}
       </h2>
       <p style={{ textAlign: "center", fontSize: 15, color: "var(--muted)", margin: "0 0 24px" }}>
-        Подготовка к ЕГЭ · прогресс синхронизируется
+        {isSignup ? `Шаг ${step} из 3 · профиль и план подготовки` : "Подготовка к ЕГЭ · прогресс синхронизируется"}
       </p>
 
       {isSignup && (
-        <label className="field" style={{ marginBottom: 14 }}>
-          <span className="field-label">Как тебя зовут</span>
-          <input className="input" placeholder="Мурад" value={name} onChange={(e) => setName(e.target.value)} />
-        </label>
+        <div className="progress-track" style={{ marginBottom: 18 }}>
+          <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }} />
+        </div>
       )}
 
-      <label className="field" style={{ marginBottom: 14 }}>
-        <span className="field-label">Email</span>
-        <input
-          className="input"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); setErr(""); }}
-        />
-      </label>
+      {(!isSignup || step === 1) && (
+        <>
+          <label className="field" style={{ marginBottom: 14 }}>
+            <span className="field-label">Email</span>
+            <input
+              className="input"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErr(""); }}
+            />
+          </label>
 
-      <label className="field">
-        <span className="field-label">Пароль</span>
-        <input
-          className={"input" + (err ? " is-error" : "")}
-          type="password"
-          autoComplete={isSignup ? "new-password" : "current-password"}
-          placeholder="Не короче 6 символов"
-          value={password}
-          onChange={(e) => { setPassword(e.target.value); setErr(""); }}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-        />
-        {err && <span className="field-hint is-error">{err}</span>}
-        {info && <span className="field-hint" style={{ color: "var(--success)" }}>{info}</span>}
-      </label>
+          <label className="field" style={{ marginBottom: isSignup ? 14 : 0 }}>
+            <span className="field-label">Пароль</span>
+            <input
+              className={"input" + (err ? " is-error" : "")}
+              type="password"
+              autoComplete={isSignup ? "new-password" : "current-password"}
+              placeholder="Не короче 6 символов"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setErr(""); }}
+              onKeyDown={(e) => e.key === "Enter" && (isSignup ? nextStep() : submit())}
+            />
+          </label>
 
-      <button className={"btn btn-primary btn-block" + (busy ? " is-loading" : "")} style={{ marginTop: 16 }} onClick={submit} disabled={busy}>
-        {isSignup ? "Зарегистрироваться" : "Войти"}
+          {isSignup && (
+            <label className="field">
+              <span className="field-label">Повтори пароль</span>
+              <input
+                className={"input" + (err ? " is-error" : "")}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Ещё раз пароль"
+                value={passwordRepeat}
+                onChange={(e) => { setPasswordRepeat(e.target.value); setErr(""); }}
+                onKeyDown={(e) => e.key === "Enter" && nextStep()}
+              />
+            </label>
+          )}
+        </>
+      )}
+
+      {isSignup && step === 2 && (
+        <>
+          <label className="field" style={{ marginBottom: 14 }}>
+            <span className="field-label">Как тебя зовут</span>
+            <input className="input" placeholder="Мурад" value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} />
+          </label>
+          <label className="field" style={{ marginBottom: 14 }}>
+            <span className="field-label">Никнейм</span>
+            <input className="input" placeholder="Можно оставить пустым" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+          </label>
+          <div style={{ display: "flex", gap: 12 }}>
+            <label className="field" style={{ flex: 1 }}>
+              <span className="field-label">Класс</span>
+              <select className="input" value={grade} onChange={(e) => setGrade(Number(e.target.value))}>
+                <option value={10}>10 класс</option>
+                <option value={11}>11 класс</option>
+              </select>
+            </label>
+            <label className="field" style={{ flex: 1 }}>
+              <span className="field-label">Цель XP / день</span>
+              <input
+                className="input"
+                type="number"
+                min={10}
+                step={5}
+                value={dailyGoalXp}
+                onChange={(e) => setDailyGoalXp(Number(e.target.value) || 45)}
+              />
+            </label>
+          </div>
+        </>
+      )}
+
+      {isSignup && step === 3 && (
+        <>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>Предметы ЕГЭ</div>
+          <div className="chip-scroller" style={{ flexWrap: "wrap", overflow: "visible", marginBottom: 6 }}>
+            {SUBJECTS.map((subject) => {
+              const on = subjectIds.includes(subject.id);
+              return (
+                <button
+                  key={subject.id}
+                  className={"chip" + (on ? " is-active" : "")}
+                  aria-pressed={on}
+                  onClick={() => toggleSubject(subject.id)}
+                >
+                  {subject.title}
+                </button>
+              );
+            })}
+          </div>
+          <p className="row-sub" style={{ margin: "6px 0 0" }}>
+            По этим предметам соберём план на сегодня и следующие тесты.
+          </p>
+        </>
+      )}
+
+      {err && <div className="field-hint is-error" style={{ marginTop: 10 }}>{err}</div>}
+      {info && <div className="field-hint" style={{ color: "var(--success)", marginTop: 10 }}>{info}</div>}
+
+      <button
+        className={"btn btn-primary btn-block" + (busy ? " is-loading" : "")}
+        style={{ marginTop: 16 }}
+        onClick={isSignup && step < 3 ? nextStep : submit}
+        disabled={busy}
+      >
+        {isSignup ? (step < 3 ? "Продолжить" : "Зарегистрироваться") : "Войти"}
       </button>
+      {isSignup && step > 1 && (
+        <button className="btn btn-secondary btn-block" style={{ marginTop: 10 }} onClick={() => setStep((s) => (s === 3 ? 2 : 1))}>
+          Назад
+        </button>
+      )}
       <button
         className="btn btn-ghost btn-block"
         style={{ marginTop: 10 }}
-        onClick={() => { setMode(isSignup ? "signin" : "signup"); setErr(""); setInfo(""); }}
+        onClick={() => switchMode(isSignup ? "signin" : "signup")}
       >
         {isSignup ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться"}
       </button>

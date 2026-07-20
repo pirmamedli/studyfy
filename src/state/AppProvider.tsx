@@ -40,6 +40,13 @@ import { deleteRemoteState, loadRemoteState, saveRemoteState } from "../data/rem
 
 export interface AuthResult {
   error?: string;
+  info?: string;
+}
+
+export interface SignUpInput {
+  email: string;
+  password: string;
+  profile: Partial<UserProfile> & Pick<UserProfile, "name" | "grade" | "subjectIds">;
 }
 
 interface AppContextValue {
@@ -52,7 +59,7 @@ interface AppContextValue {
   userEmail: string | null;
   // auth
   signIn: (email: string, password: string) => Promise<AuthResult>;
-  signUp: (email: string, password: string, name: string) => Promise<AuthResult>;
+  signUp: (input: SignUpInput) => Promise<AuthResult>;
   login: () => void; // локальный режим без Supabase
   logout: () => void;
   // gameplay
@@ -99,6 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const stateRef = useRef(state);
   stateRef.current = state;
+  const pendingSignUpProfileRef = useRef<Partial<UserProfile> | null>(null);
 
   // локальный кэш (офлайн)
   useEffect(() => {
@@ -143,9 +151,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (async () => {
       const remote = await loadRemoteState(userId);
       if (cancelled) return;
-      const base = remote ?? { ...stateRef.current, authed: true };
+      const pendingProfile = pendingSignUpProfileRef.current;
+      const base =
+        remote ??
+        {
+          ...stateRef.current,
+          profile: { ...stateRef.current.profile, ...(pendingProfile ?? {}) },
+          authed: true,
+        };
       const next = loginR({ ...base, authed: true }); // серия/жизни/фокус на день
       setState(next);
+      pendingSignUpProfileRef.current = null;
       setHydrated(true);
       await saveRemoteState(userId, next);
     })();
@@ -172,14 +188,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return error ? { error: humanAuthError(error.message) } : {};
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, name: string): Promise<AuthResult> => {
+  const signUp = useCallback(async ({ email, password, profile }: SignUpInput): Promise<AuthResult> => {
     if (!supabase) return { error: "Supabase не настроен" };
-    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+    const cleanName = profile.name.trim() || "Ученик";
+    const cleanNickname = profile.nickname?.trim() || cleanName;
+    const nextProfile: Partial<UserProfile> = {
+      ...profile,
+      name: cleanName,
+      nickname: cleanNickname,
+    };
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          name: cleanName,
+          nickname: cleanNickname,
+          grade: profile.grade,
+          subject_ids: profile.subjectIds,
+        },
+      },
+    });
     if (error) return { error: humanAuthError(error.message) };
-    // сохранить имя в состоянии; если подтверждение email включено — сессии ещё нет
-    const cleanName = name.trim() || "Ученик";
-    setState((s) => updateProfileR(s, { name: cleanName, nickname: s.profile.nickname || cleanName }));
-    if (!data.session) return { error: "Проверь почту и подтверди адрес, затем войди." };
+    pendingSignUpProfileRef.current = nextProfile;
+    setState((s) => updateProfileR(s, nextProfile));
+    if (!data.session) return { info: "Проверь почту и подтверди адрес, затем войди." };
     return {};
   }, []);
 
@@ -275,8 +308,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 function humanAuthError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Неверный email или пароль";
+  if (m.includes("invalid path")) return "Не удалось завершить запрос к Supabase. Проверь настройки Auth в проекте.";
   if (m.includes("already registered") || m.includes("already been registered"))
     return "Такой email уже зарегистрирован";
+  if (m.includes("user already registered")) return "Такой email уже зарегистрирован";
+  if (m.includes("signup") && m.includes("disabled")) return "Регистрация временно отключена в Supabase";
   if (m.includes("password")) return "Пароль должен быть не короче 6 символов";
   if (m.includes("email")) return "Проверь адрес электронной почты";
   return message;
