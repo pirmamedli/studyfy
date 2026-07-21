@@ -35,7 +35,7 @@ import {
   type StateRepository,
 } from "../data/store";
 import { computeDerived, type Derived } from "../data/progress";
-import { isSupabaseEnabled, supabase } from "../lib/supabase";
+import { isSupabaseEnabled, supabase, supabaseAnonKey, supabaseUrl } from "../lib/supabase";
 import { deleteRemoteState, loadRemoteState, saveRemoteState } from "../data/remote";
 
 export interface AuthResult {
@@ -189,8 +189,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         supabase.auth.signInWithPassword({ email: email.trim(), password }),
         "Supabase долго отвечает. Попробуй ещё раз.",
       );
+      if (error && isInvalidPathError(error.message)) return directSignIn(email, password);
       return error ? humanAuthError(error.message) : {};
     } catch (error) {
+      if (isInvalidPathError(error instanceof Error ? error.message : "")) return directSignIn(email, password);
       return humanAuthError(error instanceof Error ? error.message : "Не удалось войти");
     }
   }, []);
@@ -224,7 +226,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }),
         "Supabase долго отвечает. Попробуй ещё раз.",
       );
-      if (error) return humanAuthError(error.message);
+      if (error && isInvalidPathError(error.message)) {
+        const fallback = await directSignUp(email, password, {
+          name: cleanName,
+          nickname: cleanNickname,
+          phone: profile.phone,
+          telegram: profile.telegram,
+          access_code: profile.accessCode,
+          grade: profile.grade,
+          subject_ids: profile.subjectIds,
+        });
+        if (fallback.error) return fallback;
+        pendingSignUpProfileRef.current = nextProfile;
+        setState((s) => updateProfileR(s, nextProfile));
+        return fallback;
+      } else if (error) {
+        return humanAuthError(error.message);
+      }
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
         return { error: "Такой email уже зарегистрирован. Попробуй войти." };
       }
@@ -233,9 +251,82 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!data.session) return { info: "Аккаунт создан. Проверь почту и подтверди адрес, затем войди." };
       return { info: "Аккаунт создан. Загружаем профиль..." };
     } catch (error) {
+      if (isInvalidPathError(error instanceof Error ? error.message : "")) {
+        const fallback = await directSignUp(email, password, {
+          name: cleanName,
+          nickname: cleanNickname,
+          phone: profile.phone,
+          telegram: profile.telegram,
+          access_code: profile.accessCode,
+          grade: profile.grade,
+          subject_ids: profile.subjectIds,
+        });
+        if (fallback.error) return fallback;
+        pendingSignUpProfileRef.current = nextProfile;
+        setState((s) => updateProfileR(s, nextProfile));
+        return fallback;
+      }
       return humanAuthError(error instanceof Error ? error.message : "Не удалось зарегистрироваться");
     }
   }, []);
+
+  async function directSignIn(email: string, password: string): Promise<AuthResult> {
+    if (!supabase || !supabaseUrl || !supabaseAnonKey) return { error: "Supabase не настроен" };
+    const data = await authFetch<{ access_token?: string; refresh_token?: string }>(
+      "/auth/v1/token?grant_type=password",
+      { email: email.trim(), password },
+    );
+    if (data.error) return data;
+    if (!data.access_token || !data.refresh_token) return { error: "Supabase не вернул сессию. Попробуй ещё раз." };
+    const { error } = await supabase.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+    });
+    return error ? humanAuthError(error.message) : {};
+  }
+
+  async function directSignUp(email: string, password: string, data: Record<string, unknown>): Promise<AuthResult> {
+    if (!supabaseUrl || !supabaseAnonKey) return { error: "Supabase не настроен" };
+    const result = await authFetch<{ access_token?: string; refresh_token?: string; session?: { access_token?: string; refresh_token?: string } }>(
+      "/auth/v1/signup",
+      {
+        email: email.trim(),
+        password,
+        data,
+        redirect_to: `${window.location.origin}/`,
+      },
+    );
+    if (result.error) return result;
+    const accessToken = result.access_token ?? result.session?.access_token;
+    const refreshToken = result.refresh_token ?? result.session?.refresh_token;
+    if (supabase && accessToken && refreshToken) {
+      await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      return { info: "Аккаунт создан. Загружаем профиль..." };
+    }
+    return { info: "Аккаунт создан. Проверь почту и подтверди адрес, затем войди." };
+  }
+
+  async function authFetch<T>(path: string, body: Record<string, unknown>): Promise<T & AuthResult> {
+    if (!supabaseUrl || !supabaseAnonKey) return { error: "Supabase не настроен" } as T & AuthResult;
+    const response = await withTimeout(
+      fetch(`${supabaseUrl}${path}`, {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }),
+      "Supabase долго отвечает. Попробуй ещё раз.",
+    );
+    const text = await response.text();
+    const payload = text ? JSON.parse(text) : {};
+    if (!response.ok) {
+      return humanAuthError(String(payload.msg ?? payload.message ?? payload.error_description ?? payload.error ?? "Не удалось выполнить запрос")) as T & AuthResult;
+    }
+    return payload as T & AuthResult;
+  }
 
   async function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
     let timer = 0;
@@ -341,7 +432,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 function humanAuthError(message: string): AuthResult {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return { error: "Неверный email или пароль" };
-  if (m.includes("invalid path")) return { error: "Supabase Auth ещё не принимает регистрацию. Проверь настройки URL в проекте." };
+  if (m.includes("email not confirmed") || m.includes("email_not_confirmed")) return { error: "Почта ещё не подтверждена. Проверь письмо от Supabase и затем войди." };
+  if (m.includes("invalid path")) return { error: "Supabase вернул некорректный Auth URL. Попробуй ещё раз." };
   if (m.includes("already registered") || m.includes("already been registered"))
     return { error: "Такой email уже зарегистрирован" };
   if (m.includes("user already registered")) return { error: "Такой email уже зарегистрирован" };
@@ -349,6 +441,10 @@ function humanAuthError(message: string): AuthResult {
   if (m.includes("password")) return { error: "Пароль должен быть не короче 6 символов" };
   if (m.includes("email")) return { error: "Проверь адрес электронной почты" };
   return { error: message };
+}
+
+function isInvalidPathError(message: string): boolean {
+  return message.toLowerCase().includes("invalid path");
 }
 
 export function useApp(): AppContextValue {
