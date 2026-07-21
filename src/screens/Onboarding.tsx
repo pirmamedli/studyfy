@@ -38,11 +38,10 @@ function SupabaseAuth() {
   const [nickname, setNickname] = useState("");
   const [grade, setGrade] = useState(11);
   const [subjectIds, setSubjectIds] = useState(["russian", "basic-math", "history"]);
-  const [phone, setPhone] = useState("");
-  const [telegram, setTelegram] = useState("");
-  const [accessCode, setAccessCode] = useState("");
+  const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRepeat, setPasswordRepeat] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,12 +57,13 @@ function SupabaseAuth() {
 
   function validateAccount() {
     if (isSignup) {
-      if (phone.trim().length < 5) return "Введи номер телефона";
-      if (!telegram.trim()) return "Введи Telegram";
-      if (accessCode.trim().length < 4) return "Введи код доступа";
+      if (!email.includes("@")) return "Введи корректный email";
+      if (!nickname.trim()) return "Придумай никнейм";
+      if (password.length < 6) return "Пароль не короче 6 символов";
+      if (password !== passwordRepeat) return "Пароли не совпадают";
       return "";
     }
-    if (!email.includes("@")) return "Введи корректный email";
+    if (!login.trim()) return "Введи email или никнейм";
     if (password.length < 6) return "Пароль не короче 6 символов";
     return "";
   }
@@ -97,18 +97,17 @@ function SupabaseAuth() {
     try {
       const res = isSignup
         ? await signUp({
+            email,
+            password,
             profile: {
               name,
-              nickname: nickname || name,
-              phone,
-              telegram,
-              accessCode: accessCode.trim().toUpperCase(),
+              nickname,
               grade,
               subjectIds,
               examDate: examDateForGrade(grade),
             },
           })
-        : await signIn(email, password);
+        : await signIn(login, password);
       if (res.error) setErr(res.error);
       if (res.info) setInfo(res.info);
     } catch {
@@ -141,14 +140,13 @@ function SupabaseAuth() {
       {!isSignup && (
         <>
           <label className="field" style={{ marginBottom: 14 }}>
-            <span className="field-label">Email</span>
+            <span className="field-label">Email или никнейм</span>
             <input
               className="input"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setErr(""); }}
+              autoComplete="username"
+              placeholder="email или никнейм"
+              value={login}
+              onChange={(e) => { setLogin(e.target.value); setErr(""); }}
             />
           </label>
 
@@ -175,7 +173,12 @@ function SupabaseAuth() {
           </label>
           <label className="field">
             <span className="field-label">Никнейм</span>
-            <input className="input" placeholder="Можно оставить пустым" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+            <input
+              className="input"
+              placeholder="например, murad"
+              value={nickname}
+              onChange={(e) => { setNickname(normalizeNickname(e.target.value)); setErr(""); }}
+            />
           </label>
         </>
       )}
@@ -231,40 +234,42 @@ function SupabaseAuth() {
       {isSignup && step === 4 && (
         <>
           <label className="field" style={{ marginBottom: 12 }}>
-            <span className="field-label">Телефон</span>
+            <span className="field-label">Email</span>
             <input
               className="input"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="+7 (999) 000-00-00"
-              value={phone}
-              onChange={(e) => { setPhone(e.target.value); setErr(""); }}
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value.trim()); setErr(""); }}
             />
           </label>
           <label className="field" style={{ marginBottom: 12 }}>
-            <span className="field-label">Telegram</span>
+            <span className="field-label">Пароль</span>
             <input
-              className="input"
-              autoComplete="off"
-              placeholder="@username"
-              value={telegram}
-              onChange={(e) => { setTelegram(e.target.value); setErr(""); }}
+              className={"input" + (err ? " is-error" : "")}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Не короче 6 символов"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setErr(""); }}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
             />
           </label>
-          <label className="field" style={{ marginBottom: 12 }}>
-            <span className="field-label">Код доступа</span>
+          <label className="field">
+            <span className="field-label">Повтори пароль</span>
             <input
-              className="input"
-              autoComplete="off"
-              placeholder="например, BETA01"
-              value={accessCode}
-              onChange={(e) => { setAccessCode(e.target.value.toUpperCase()); setErr(""); }}
-              style={{ textTransform: "uppercase", letterSpacing: ".06em" }}
+              className={"input" + (err ? " is-error" : "")}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Ещё раз пароль"
+              value={passwordRepeat}
+              onChange={(e) => { setPasswordRepeat(e.target.value); setErr(""); }}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
             />
           </label>
           <p className="row-sub" style={{ margin: "6px 0 0" }}>
-            Аккаунт создаётся без email и без писем. Вход сохранится на этом устройстве.
+            Почту подтверждать не нужно. После регистрации можно входить по email или никнейму.
           </p>
         </>
       )}
@@ -294,6 +299,10 @@ function SupabaseAuth() {
       </button>
     </>
   );
+}
+
+function normalizeNickname(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24);
 }
 
 // ─── локальный режим без Supabase (код доступа) ───────────────────────────────

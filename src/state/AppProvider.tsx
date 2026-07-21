@@ -45,6 +45,8 @@ export interface AuthResult {
 }
 
 export interface SignUpInput {
+  email: string;
+  password: string;
   profile: Partial<UserProfile> & Pick<UserProfile, "name" | "grade" | "subjectIds">;
 }
 
@@ -57,7 +59,7 @@ interface AppContextValue {
   supabaseEnabled: boolean;
   userEmail: string | null;
   // auth
-  signIn: (email: string, password: string) => Promise<AuthResult>;
+  signIn: (login: string, password: string) => Promise<AuthResult>;
   signUp: (input: SignUpInput) => Promise<AuthResult>;
   login: () => void; // локальный режим без Supabase
   logout: () => void;
@@ -181,11 +183,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const derived = useMemo(() => computeDerived(state), [state]);
 
   // ── auth actions ──
-  const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+  const signIn = useCallback(async (login: string, password: string): Promise<AuthResult> => {
     if (!supabase) return { error: "Supabase не настроен" };
+    const email = await resolveLoginEmail(login);
+    if (!email) return { error: "Никнейм не найден" };
     try {
       const { error } = await withTimeout(
-        supabase.auth.signInWithPassword({ email: email.trim(), password }),
+        supabase.auth.signInWithPassword({ email, password }),
         "Supabase долго отвечает. Попробуй ещё раз.",
       );
       if (error && isInvalidPathError(error.message)) return directSignIn(email, password);
@@ -196,10 +200,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signUp = useCallback(async ({ profile }: SignUpInput): Promise<AuthResult> => {
+  const signUp = useCallback(async ({ email, password, profile }: SignUpInput): Promise<AuthResult> => {
     if (!supabase) return { error: "Supabase не настроен" };
     const cleanName = profile.name.trim() || "Ученик";
-    const cleanNickname = profile.nickname?.trim() || cleanName;
+    const cleanNickname = normalizeNickname(profile.nickname?.trim() || cleanName);
+    const cleanEmail = email.trim().toLowerCase();
+    const nicknameEmail = await resolveLoginEmail(cleanNickname);
+    if (nicknameEmail) return { error: "Такой никнейм уже занят" };
     const nextProfile: Partial<UserProfile> = {
       ...profile,
       name: cleanName,
@@ -208,23 +215,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const metadata = {
       name: cleanName,
       nickname: cleanNickname,
-      phone: profile.phone,
-      telegram: profile.telegram,
-      access_code: profile.accessCode,
+      email: cleanEmail,
       grade: profile.grade,
       subject_ids: profile.subjectIds,
     };
     try {
       const { data, error } = await withTimeout(
-        supabase.auth.signInAnonymously({
+        supabase.auth.signUp({
+          email: cleanEmail,
+          password,
           options: {
+            emailRedirectTo: window.location.origin,
             data: metadata,
           },
         }),
         "Supabase долго отвечает. Попробуй ещё раз.",
       );
       if (error && isInvalidPathError(error.message)) {
-        const fallback = await directAnonymousSignUp(metadata);
+        const fallback = await directEmailSignUp(cleanEmail, password, metadata);
         if (fallback.error) return fallback;
         pendingSignUpProfileRef.current = nextProfile;
         setState((s) => updateProfileR(s, nextProfile));
@@ -232,14 +240,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else if (error) {
         return authErrorToResult(error);
       }
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        return { error: "Такой email уже зарегистрирован. Попробуй войти." };
+      }
+      if (!data.session) {
+        return { error: "В Supabase включено подтверждение почты. Выключи Confirm email в Authentication → Providers → Email." };
+      }
+      const aliasResult = await saveLoginAlias(data.session.user.id, cleanEmail, cleanNickname);
+      if (aliasResult.error) return aliasResult;
       pendingSignUpProfileRef.current = nextProfile;
       setState((s) => updateProfileR(s, nextProfile));
-      if (!data.session) return { error: "Supabase не вернул сессию. Проверь, включены ли Anonymous sign-ins." };
       return { info: "Аккаунт создан. Загружаем профиль..." };
     } catch (error) {
       if (isInvalidPathError(error instanceof Error ? error.message : "")) {
-        const fallback = await directAnonymousSignUp(metadata);
+        const fallback = await directEmailSignUp(cleanEmail, password, metadata);
         if (fallback.error) return fallback;
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          const aliasResult = await saveLoginAlias(data.session.user.id, cleanEmail, cleanNickname);
+          if (aliasResult.error) return aliasResult;
+        }
         pendingSignUpProfileRef.current = nextProfile;
         setState((s) => updateProfileR(s, nextProfile));
         return fallback;
@@ -263,12 +283,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return error ? authErrorToResult(error) : {};
   }
 
-  async function directAnonymousSignUp(data: Record<string, unknown>): Promise<AuthResult> {
+  async function directEmailSignUp(email: string, password: string, data: Record<string, unknown>): Promise<AuthResult> {
     if (!supabaseUrl || !supabaseAnonKey) return { error: "Supabase не настроен" };
     const result = await authFetch<{ access_token?: string; refresh_token?: string; session?: { access_token?: string; refresh_token?: string } }>(
       "/auth/v1/signup",
       {
+        email,
+        password,
         data,
+        redirect_to: `${window.location.origin}/`,
       },
     );
     if (result.error) return result;
@@ -278,7 +301,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
       return { info: "Аккаунт создан. Загружаем профиль..." };
     }
-    return { error: "Supabase не вернул сессию. Проверь, включены ли Anonymous sign-ins." };
+    return { error: "В Supabase включено подтверждение почты. Выключи Confirm email в Authentication → Providers → Email." };
+  }
+
+  async function resolveLoginEmail(login: string): Promise<string | null> {
+    if (!supabase) return null;
+    const clean = login.trim().toLowerCase();
+    if (!clean) return null;
+    if (clean.includes("@")) return clean;
+    const { data, error } = await supabase.rpc("studyfy_resolve_login", { login_value: clean });
+    if (error || typeof data !== "string" || !data) return null;
+    return data;
+  }
+
+  async function saveLoginAlias(userId: string, email: string, nickname: string): Promise<AuthResult> {
+    if (!supabase) return { error: "Supabase не настроен" };
+    const { error } = await supabase.from("studyfy_login_aliases").upsert(
+      {
+        user_id: userId,
+        email,
+        nickname,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
+    if (!error) return {};
+    if (error.code === "42P01") return {};
+    if (String(error.message).toLowerCase().includes("duplicate")) return { error: "Такой никнейм уже занят" };
+    return authErrorToResult(error);
   }
 
   async function authFetch<T>(path: string, body: Record<string, unknown>): Promise<T & AuthResult> {
@@ -434,7 +484,7 @@ function humanAuthError(message: string, code?: string, status?: number): AuthRe
   const c = (code ?? "").toLowerCase();
   if (m.includes("invalid login")) return { error: "Неверный email или пароль", code };
   if (c === "email_not_confirmed" || m.includes("email not confirmed") || m.includes("email_not_confirmed")) {
-    return { error: "Почта ещё не подтверждена. Проверь письмо от Supabase и затем войди.", code };
+    return { error: "В Supabase включено подтверждение почты. Выключи Confirm email в Authentication → Providers → Email.", code };
   }
   if (c === "email_address_invalid" || m.includes("email address") && m.includes("invalid")) {
     return {
@@ -463,6 +513,10 @@ function humanAuthError(message: string, code?: string, status?: number): AuthRe
 
 function isInvalidPathError(message: string): boolean {
   return message.toLowerCase().includes("invalid path");
+}
+
+function normalizeNickname(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24);
 }
 
 export function useApp(): AppContextValue {
