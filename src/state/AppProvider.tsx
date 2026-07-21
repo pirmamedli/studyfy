@@ -184,8 +184,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── auth actions ──
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     if (!supabase) return { error: "Supabase не настроен" };
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? humanAuthError(error.message) : {};
+    try {
+      const { error } = await withTimeout(
+        supabase.auth.signInWithPassword({ email: email.trim(), password }),
+        "Supabase долго отвечает. Попробуй ещё раз.",
+      );
+      return error ? humanAuthError(error.message) : {};
+    } catch (error) {
+      return humanAuthError(error instanceof Error ? error.message : "Не удалось войти");
+    }
   }, []);
 
   const signUp = useCallback(async ({ email, password, profile }: SignUpInput): Promise<AuthResult> => {
@@ -197,28 +204,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
       name: cleanName,
       nickname: cleanNickname,
     };
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: {
-          name: cleanName,
-          nickname: cleanNickname,
-          phone: profile.phone,
-          telegram: profile.telegram,
-          access_code: profile.accessCode,
-          grade: profile.grade,
-          subject_ids: profile.subjectIds,
-        },
-      },
-    });
-    if (error) return humanAuthError(error.message);
-    pendingSignUpProfileRef.current = nextProfile;
-    setState((s) => updateProfileR(s, nextProfile));
-    if (!data.session) return { info: "Проверь почту и подтверди адрес, затем войди." };
-    return {};
+    try {
+      const { data, error } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              name: cleanName,
+              nickname: cleanNickname,
+              phone: profile.phone,
+              telegram: profile.telegram,
+              access_code: profile.accessCode,
+              grade: profile.grade,
+              subject_ids: profile.subjectIds,
+            },
+          },
+        }),
+        "Supabase долго отвечает. Попробуй ещё раз.",
+      );
+      if (error) return humanAuthError(error.message);
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        return { error: "Такой email уже зарегистрирован. Попробуй войти." };
+      }
+      pendingSignUpProfileRef.current = nextProfile;
+      setState((s) => updateProfileR(s, nextProfile));
+      if (!data.session) return { info: "Аккаунт создан. Проверь почту и подтверди адрес, затем войди." };
+      return { info: "Аккаунт создан. Загружаем профиль..." };
+    } catch (error) {
+      return humanAuthError(error instanceof Error ? error.message : "Не удалось зарегистрироваться");
+    }
   }, []);
+
+  async function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+    let timer = 0;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = window.setTimeout(() => reject(new Error(message)), 12_000);
+    });
+    try {
+      return await Promise.race([promise, timeout]);
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
 
   const login = useCallback(() => setState((s) => loginR(s)), []); // локальный режим
   const logout = useCallback(() => {
@@ -312,7 +341,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 function humanAuthError(message: string): AuthResult {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return { error: "Неверный email или пароль" };
-  if (m.includes("invalid path")) return {};
+  if (m.includes("invalid path")) return { error: "Supabase Auth ещё не принимает регистрацию. Проверь настройки URL в проекте." };
   if (m.includes("already registered") || m.includes("already been registered"))
     return { error: "Такой email уже зарегистрирован" };
   if (m.includes("user already registered")) return { error: "Такой email уже зарегистрирован" };

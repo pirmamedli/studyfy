@@ -93,25 +93,30 @@ function SupabaseAuth() {
     if (isSignup && !name.trim()) return setErr("Введи имя");
     if (isSignup && subjectIds.length === 0) return setErr("Выбери хотя бы один предмет");
     setBusy(true);
-    const res = isSignup
-      ? await signUp({
-          email,
-          password,
-          profile: {
-            name,
-            nickname: nickname || name,
-            phone,
-            telegram,
-            accessCode: accessCode.trim().toUpperCase(),
-            grade,
-            subjectIds,
-            examDate: examDateForGrade(grade),
-          },
-        })
-      : await signIn(email, password);
-    setBusy(false);
-    if (res.error) setErr(res.error);
-    if (res.info) setInfo(res.info);
+    try {
+      const res = isSignup
+        ? await signUp({
+            email,
+            password,
+            profile: {
+              name,
+              nickname: nickname || name,
+              phone,
+              telegram,
+              accessCode: accessCode.trim().toUpperCase(),
+              grade,
+              subjectIds,
+              examDate: examDateForGrade(grade),
+            },
+          })
+        : await signIn(email, password);
+      if (res.error) setErr(res.error);
+      if (res.info) setInfo(res.info);
+    } catch {
+      setErr("Не удалось выполнить запрос. Попробуй ещё раз.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function toggleSubject(id: string) {
