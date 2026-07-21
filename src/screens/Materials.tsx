@@ -10,6 +10,14 @@ import {
   getTest,
   materialsForSubject,
 } from "../data/content";
+import type { MaterialSection } from "../data/types";
+
+function materialIcon(section: MaterialSection) {
+  if (section === "flashcards") return "cards";
+  if (section === "trials") return "calendar";
+  if (section === "errorReview") return "refresh";
+  return "book";
+}
 
 export function Materials() {
   const { state, derived } = useApp();
@@ -125,7 +133,7 @@ export function Materials() {
           {filtered.map((m) => (
             <Link key={m.id} to={`/material/${m.id}`} className="list-row">
               <span className="row-lead">
-                <Icon name={m.section === "flashcards" ? "cards" : "book"} size={20} />
+                <Icon name={materialIcon(m.section)} size={20} />
               </span>
               <div style={{ flex: 1 }}>
                 <div className="row-title">{m.title}</div>

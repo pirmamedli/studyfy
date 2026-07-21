@@ -205,6 +205,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         data: {
           name: cleanName,
           nickname: cleanNickname,
+          phone: profile.phone,
+          telegram: profile.telegram,
+          access_code: profile.accessCode,
           grade: profile.grade,
           subject_ids: profile.subjectIds,
         },

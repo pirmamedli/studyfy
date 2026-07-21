@@ -13,25 +13,49 @@ interface RawQuestion {
   question: string;
   hint?: string;
   image?: string;
+  imageAlt?: string;
+  caption?: string;
+  contextTitle?: string;
+  contextText?: string;
+  passage?: string;
+  placeholder?: string;
   answers?: string[];
   correct?: number | number[];
   pairs?: { left: string; right: string }[];
+  matches?: { left: string; right: string }[];
   leftItems?: string[];
   rightItems?: string[];
+  options?: string[];
+  rightOptions?: string[];
   items?: string[];
   correctOrder?: number[];
   acceptedAnswers?: string[];
+  correctAnswers?: string[];
+  answer?: string;
 }
 
 export function normalizeQuestion(raw: RawQuestion): Question {
-  const base = { question: raw.question, hint: raw.hint, image: raw.image };
+  const base = {
+    question: raw.question,
+    hint: raw.hint,
+    image: raw.image,
+    imageAlt: raw.imageAlt,
+    caption: raw.caption,
+    contextTitle: raw.contextTitle,
+    contextText: raw.contextText ?? raw.passage,
+  };
   switch (raw.type) {
     case "multiple-choice":
       return { ...base, type: "multiple", answers: raw.answers ?? [], correct: toIndexArray(raw.correct) };
     case "matching": {
-      const pairs = raw.pairs ?? [];
+      const pairs = raw.pairs ?? raw.matches ?? [];
       const leftItems = raw.leftItems ?? pairs.map((p) => p.left);
-      const rightItems = raw.rightItems ?? pairs.map((p) => p.right);
+      const rightItems = uniqueStrings([
+        ...(raw.rightItems ?? []),
+        ...(raw.options ?? []),
+        ...(raw.rightOptions ?? []),
+        ...pairs.map((p) => p.right),
+      ]);
       const correctRight = leftItems.map((l) => pairs.find((p) => p.left === l)?.right ?? "");
       return { ...base, type: "matching", leftItems, rightItems, correctRight };
     }
@@ -43,11 +67,20 @@ export function normalizeQuestion(raw: RawQuestion): Question {
         correctOrder: raw.correctOrder ?? (raw.items ?? []).map((_, i) => i),
       };
     case "free-response":
-      return { ...base, type: "free", acceptedAnswers: raw.acceptedAnswers ?? [] };
+      return {
+        ...base,
+        type: "free",
+        acceptedAnswers: raw.acceptedAnswers ?? raw.correctAnswers ?? (typeof raw.answer === "string" ? [raw.answer] : []),
+        placeholder: raw.placeholder,
+      };
     case "single-choice":
     default:
       return { ...base, type: "single", answers: raw.answers ?? [], correct: toIndexArray(raw.correct) };
   }
+}
+
+function uniqueStrings(items: string[]): string[] {
+  return items.filter((item, index, arr) => item && arr.indexOf(item) === index);
 }
 
 // ─── начальное состояние ответа ───────────────────────────────────────────────

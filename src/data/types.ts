@@ -39,6 +39,11 @@ interface QuestionBase {
   hint?: string;
   /** внешняя картинка к вопросу */
   image?: string;
+  imageAlt?: string;
+  caption?: string;
+  /** текстовый фрагмент из старого конструктора заданий */
+  contextTitle?: string;
+  contextText?: string;
 }
 
 /** Один правильный вариант. */
@@ -76,6 +81,7 @@ export interface SequenceQuestion extends QuestionBase {
 export interface FreeResponseQuestion extends QuestionBase {
   type: "free";
   acceptedAnswers: string[];
+  placeholder?: string;
 }
 
 export type Question =
@@ -107,7 +113,7 @@ export interface Test {
   questions: Question[];
 }
 
-export type MaterialSection = "notes" | "flashcards" | "trials";
+export type MaterialSection = "notes" | "flashcards" | "trials" | "errorReview";
 
 export type MaterialBlock =
   | { type: "paragraph"; text: string }
@@ -235,6 +241,9 @@ export interface NotificationPreference {
 export interface UserProfile {
   name: string;
   nickname: string;
+  phone?: string;
+  telegram?: string;
+  accessCode?: string;
   grade: number; // класс обучения
   /** выбранные предметы ЕГЭ */
   subjectIds: SubjectId[];

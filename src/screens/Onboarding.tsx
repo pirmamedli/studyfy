@@ -33,11 +33,14 @@ export function Onboarding() {
 function SupabaseAuth() {
   const { signIn, signUp } = useApp();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [grade, setGrade] = useState(11);
   const [subjectIds, setSubjectIds] = useState(["russian", "basic-math", "history"]);
+  const [phone, setPhone] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRepeat, setPasswordRepeat] = useState("");
@@ -56,6 +59,9 @@ function SupabaseAuth() {
 
   function validateAccount() {
     if (!email.includes("@")) return "Введи корректный email";
+    if (isSignup && phone.trim().length < 5) return "Введи номер телефона";
+    if (isSignup && !telegram.trim()) return "Введи Telegram";
+    if (isSignup && accessCode.trim().length < 4) return "Введи код доступа";
     if (password.length < 6) return "Пароль не короче 6 символов";
     if (isSignup && password !== passwordRepeat) return "Пароли не совпадают";
     return "";
@@ -65,14 +71,17 @@ function SupabaseAuth() {
     setErr("");
     setInfo("");
     if (step === 1) {
-      const accountError = validateAccount();
-      if (accountError) return setErr(accountError);
+      if (!name.trim()) return setErr("Введи имя");
       setStep(2);
       return;
     }
     if (step === 2) {
-      if (!name.trim()) return setErr("Введи имя");
       setStep(3);
+      return;
+    }
+    if (step === 3) {
+      if (subjectIds.length === 0) return setErr("Выбери хотя бы один предмет");
+      setStep(4);
     }
   }
 
@@ -91,6 +100,9 @@ function SupabaseAuth() {
           profile: {
             name,
             nickname: nickname || name,
+            phone,
+            telegram,
+            accessCode: accessCode.trim().toUpperCase(),
             grade,
             subjectIds,
             examDate: examDateForGrade(grade),
@@ -113,16 +125,16 @@ function SupabaseAuth() {
         {isSignup ? "Создать аккаунт" : "С возвращением"}
       </h2>
       <p style={{ textAlign: "center", fontSize: 15, color: "var(--muted)", margin: "0 0 24px" }}>
-        {isSignup ? `Шаг ${step} из 3 · профиль и план подготовки` : "Подготовка к ЕГЭ · прогресс синхронизируется"}
+        {isSignup ? `Шаг ${step} из 4 · профиль и доступ` : "Подготовка к ЕГЭ · прогресс синхронизируется"}
       </p>
 
       {isSignup && (
         <div className="progress-track" style={{ marginBottom: 18 }}>
-          <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }} />
+          <div className="progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
         </div>
       )}
 
-      {(!isSignup || step === 1) && (
+      {!isSignup && (
         <>
           <label className="field" style={{ marginBottom: 14 }}>
             <span className="field-label">Email</span>
@@ -148,41 +160,43 @@ function SupabaseAuth() {
               onKeyDown={(e) => e.key === "Enter" && (isSignup ? nextStep() : submit())}
             />
           </label>
-
-          {isSignup && (
-            <label className="field">
-              <span className="field-label">Повтори пароль</span>
-              <input
-                className={"input" + (err ? " is-error" : "")}
-                type="password"
-                autoComplete="new-password"
-                placeholder="Ещё раз пароль"
-                value={passwordRepeat}
-                onChange={(e) => { setPasswordRepeat(e.target.value); setErr(""); }}
-                onKeyDown={(e) => e.key === "Enter" && nextStep()}
-              />
-            </label>
-          )}
         </>
       )}
 
-      {isSignup && step === 2 && (
+      {isSignup && step === 1 && (
         <>
           <label className="field" style={{ marginBottom: 14 }}>
             <span className="field-label">Как тебя зовут</span>
             <input className="input" placeholder="Мурад" value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} />
           </label>
-          <label className="field" style={{ marginBottom: 14 }}>
+          <label className="field">
             <span className="field-label">Никнейм</span>
             <input className="input" placeholder="Можно оставить пустым" value={nickname} onChange={(e) => setNickname(e.target.value)} />
           </label>
-          <label className="field">
-            <span className="field-label">Класс</span>
-            <select className="input" value={grade} onChange={(e) => setGrade(Number(e.target.value))}>
-              <option value={10}>10 класс</option>
-              <option value={11}>11 класс</option>
-            </select>
-          </label>
+        </>
+      )}
+
+      {isSignup && step === 2 && (
+        <>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>Класс</div>
+          <div className="chip-scroller" style={{ flexWrap: "wrap", overflow: "visible", marginBottom: 6 }}>
+            {[10, 11].map((value) => {
+              const on = grade === value;
+              return (
+                <button
+                  key={value}
+                  className={"chip" + (on ? " is-active" : "")}
+                  aria-pressed={on}
+                  onClick={() => setGrade(value)}
+                >
+                  {value} класс
+                </button>
+              );
+            })}
+          </div>
+          <p className="row-sub" style={{ margin: "6px 0 0" }}>
+            Дату ЕГЭ подставим автоматически для обратного отсчёта.
+          </p>
         </>
       )}
 
@@ -210,19 +224,92 @@ function SupabaseAuth() {
         </>
       )}
 
+      {isSignup && step === 4 && (
+        <>
+          <label className="field" style={{ marginBottom: 12 }}>
+            <span className="field-label">Email</span>
+            <input
+              className="input"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErr(""); }}
+            />
+          </label>
+          <label className="field" style={{ marginBottom: 12 }}>
+            <span className="field-label">Телефон</span>
+            <input
+              className="input"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="+7 (999) 000-00-00"
+              value={phone}
+              onChange={(e) => { setPhone(e.target.value); setErr(""); }}
+            />
+          </label>
+          <label className="field" style={{ marginBottom: 12 }}>
+            <span className="field-label">Telegram</span>
+            <input
+              className="input"
+              autoComplete="off"
+              placeholder="@username"
+              value={telegram}
+              onChange={(e) => { setTelegram(e.target.value); setErr(""); }}
+            />
+          </label>
+          <label className="field" style={{ marginBottom: 12 }}>
+            <span className="field-label">Код доступа</span>
+            <input
+              className="input"
+              autoComplete="off"
+              placeholder="например, BETA01"
+              value={accessCode}
+              onChange={(e) => { setAccessCode(e.target.value.toUpperCase()); setErr(""); }}
+              style={{ textTransform: "uppercase", letterSpacing: ".06em" }}
+            />
+          </label>
+          <label className="field" style={{ marginBottom: 14 }}>
+            <span className="field-label">Пароль</span>
+            <input
+              className={"input" + (err ? " is-error" : "")}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Не короче 6 символов"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setErr(""); }}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+            />
+          </label>
+          <label className="field">
+            <span className="field-label">Повтори пароль</span>
+            <input
+              className={"input" + (err ? " is-error" : "")}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Ещё раз пароль"
+              value={passwordRepeat}
+              onChange={(e) => { setPasswordRepeat(e.target.value); setErr(""); }}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+            />
+          </label>
+        </>
+      )}
+
       {err && <div className="field-hint is-error" style={{ marginTop: 10 }}>{err}</div>}
       {info && <div className="field-hint" style={{ color: "var(--success)", marginTop: 10 }}>{info}</div>}
 
       <button
         className={"btn btn-primary btn-block" + (busy ? " is-loading" : "")}
         style={{ marginTop: 16 }}
-        onClick={isSignup && step < 3 ? nextStep : submit}
+        onClick={isSignup && step < 4 ? nextStep : submit}
         disabled={busy}
       >
-        {isSignup ? (step < 3 ? "Продолжить" : "Зарегистрироваться") : "Войти"}
+        {isSignup ? (step < 4 ? "Продолжить" : "Зарегистрироваться") : "Войти"}
       </button>
       {isSignup && step > 1 && (
-        <button className="btn btn-secondary btn-block" style={{ marginTop: 10 }} onClick={() => setStep((s) => (s === 3 ? 2 : 1))}>
+        <button className="btn btn-secondary btn-block" style={{ marginTop: 10 }} onClick={() => setStep((s) => (s === 4 ? 3 : s === 3 ? 2 : 1))}>
           Назад
         </button>
       )}

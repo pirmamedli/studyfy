@@ -127,17 +127,46 @@ export function TestRunner() {
         {retryMode === "mistakes" ? "Повтор ошибок · " : ""}
         {test.subtitle || test.topicTitle} · {test.topicTitle}
       </div>
+      {(q.contextTitle || q.contextText) && (
+        <div
+          className="card-inset"
+          style={{
+            padding: 14,
+            marginBottom: 14,
+            maxHeight: 180,
+            overflow: "auto",
+          }}
+        >
+          {q.contextTitle && (
+            <div className="eyebrow" style={{ marginBottom: q.contextText ? 8 : 0 }}>
+              {q.contextTitle}
+            </div>
+          )}
+          {q.contextText && (
+            <p style={{ margin: 0, whiteSpace: "pre-line", color: "var(--ink-2)", fontSize: 15, lineHeight: 1.55 }}>
+              {q.contextText}
+            </p>
+          )}
+        </div>
+      )}
       <h2 className="t-h1" style={{ fontSize: 21, lineHeight: 1.3, margin: "0 0 16px", textWrap: "balance", whiteSpace: "pre-line" }}>
         {q.question}
       </h2>
 
       {q.image && (
-        <img
-          src={q.image}
-          alt=""
-          style={{ width: "100%", maxHeight: 240, objectFit: "contain", borderRadius: 12, marginBottom: 16, background: "var(--surface-2)" }}
-          onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-        />
+        <figure style={{ margin: "0 0 16px" }}>
+          <img
+            src={q.image}
+            alt={q.imageAlt ?? ""}
+            style={{ width: "100%", maxHeight: 240, objectFit: "contain", borderRadius: 12, background: "var(--surface-2)" }}
+            onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+          />
+          {q.caption && (
+            <figcaption className="t-caption" style={{ marginTop: 8, textAlign: "center" }}>
+              {q.caption}
+            </figcaption>
+          )}
+        </figure>
       )}
 
       <div style={{ flex: 1 }}>
@@ -362,7 +391,7 @@ function QuestionBody({
       return (
         <input
           className={"input" + cls}
-          placeholder="Ваш ответ"
+          placeholder={q.placeholder ?? "Ваш ответ"}
           value={val}
           disabled={confirmed}
           onChange={(e) => onChange(e.target.value)}

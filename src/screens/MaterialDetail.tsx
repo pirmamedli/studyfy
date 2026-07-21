@@ -36,6 +36,7 @@ const SECTION_LABEL: Record<string, string> = {
   notes: "Конспект",
   flashcards: "Карточки",
   trials: "Пробник",
+  errorReview: "Разбор ошибок",
 };
 
 export function MaterialDetail() {
