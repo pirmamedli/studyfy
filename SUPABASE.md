@@ -59,9 +59,10 @@ npm run dev
 подтверждения. Прогресс подтягивается из Supabase, а изменения сохраняются
 автоматически (с задержкой ~1 с).
 
-Для входа по никнейму дополнительно нужна таблица-индекс `nickname → email` и RPC
-для резолва никнейма перед Supabase Auth. Без этого Supabase умеет входить только
-по email/паролю.
+Вход по никнейму работает через таблицу `public.studyfy_login_aliases` и RPC
+`public.studyfy_resolve_login`, которые создаются миграцией
+`20260721103000_login_aliases.sql`. Supabase Auth всё равно получает email,
+но пользователь может вводить никнейм.
 
 ## CLI-работа
 
@@ -84,7 +85,8 @@ npm run supabase:start      # локальный Supabase (нужен Docker)
 ```
 
 Текущая схема лежит в миграции
-`supabase/migrations/20260720175500_initial_studyfy_state.sql`.
+`supabase/migrations/20260720175500_initial_studyfy_state.sql`, а поддержка
+входа по никнейму — в `supabase/migrations/20260721103000_login_aliases.sql`.
 Файл `supabase/schema.sql` оставлен как читаемая копия схемы для SQL Editor.
 
 ## Как это устроено в коде
