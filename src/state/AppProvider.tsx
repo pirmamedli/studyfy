@@ -45,8 +45,6 @@ export interface AuthResult {
 }
 
 export interface SignUpInput {
-  email: string;
-  password: string;
   profile: Partial<UserProfile> & Pick<UserProfile, "name" | "grade" | "subjectIds">;
 }
 
@@ -198,7 +196,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signUp = useCallback(async ({ email, password, profile }: SignUpInput): Promise<AuthResult> => {
+  const signUp = useCallback(async ({ profile }: SignUpInput): Promise<AuthResult> => {
     if (!supabase) return { error: "Supabase не настроен" };
     const cleanName = profile.name.trim() || "Ученик";
     const cleanNickname = profile.nickname?.trim() || cleanName;
@@ -207,36 +205,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       name: cleanName,
       nickname: cleanNickname,
     };
+    const metadata = {
+      name: cleanName,
+      nickname: cleanNickname,
+      phone: profile.phone,
+      telegram: profile.telegram,
+      access_code: profile.accessCode,
+      grade: profile.grade,
+      subject_ids: profile.subjectIds,
+    };
     try {
       const { data, error } = await withTimeout(
-        supabase.auth.signUp({
-          email: email.trim(),
-          password,
+        supabase.auth.signInAnonymously({
           options: {
-            emailRedirectTo: window.location.origin,
-            data: {
-              name: cleanName,
-              nickname: cleanNickname,
-              phone: profile.phone,
-              telegram: profile.telegram,
-              access_code: profile.accessCode,
-              grade: profile.grade,
-              subject_ids: profile.subjectIds,
-            },
+            data: metadata,
           },
         }),
         "Supabase долго отвечает. Попробуй ещё раз.",
       );
       if (error && isInvalidPathError(error.message)) {
-        const fallback = await directSignUp(email, password, {
-          name: cleanName,
-          nickname: cleanNickname,
-          phone: profile.phone,
-          telegram: profile.telegram,
-          access_code: profile.accessCode,
-          grade: profile.grade,
-          subject_ids: profile.subjectIds,
-        });
+        const fallback = await directAnonymousSignUp(metadata);
         if (fallback.error) return fallback;
         pendingSignUpProfileRef.current = nextProfile;
         setState((s) => updateProfileR(s, nextProfile));
@@ -244,24 +232,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else if (error) {
         return authErrorToResult(error);
       }
-      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        return { error: "Такой email уже зарегистрирован. Попробуй войти." };
-      }
       pendingSignUpProfileRef.current = nextProfile;
       setState((s) => updateProfileR(s, nextProfile));
-      if (!data.session) return { info: "Аккаунт создан. Проверь почту и подтверди адрес, затем войди." };
+      if (!data.session) return { error: "Supabase не вернул сессию. Проверь, включены ли Anonymous sign-ins." };
       return { info: "Аккаунт создан. Загружаем профиль..." };
     } catch (error) {
       if (isInvalidPathError(error instanceof Error ? error.message : "")) {
-        const fallback = await directSignUp(email, password, {
-          name: cleanName,
-          nickname: cleanNickname,
-          phone: profile.phone,
-          telegram: profile.telegram,
-          access_code: profile.accessCode,
-          grade: profile.grade,
-          subject_ids: profile.subjectIds,
-        });
+        const fallback = await directAnonymousSignUp(metadata);
         if (fallback.error) return fallback;
         pendingSignUpProfileRef.current = nextProfile;
         setState((s) => updateProfileR(s, nextProfile));
@@ -286,15 +263,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return error ? authErrorToResult(error) : {};
   }
 
-  async function directSignUp(email: string, password: string, data: Record<string, unknown>): Promise<AuthResult> {
+  async function directAnonymousSignUp(data: Record<string, unknown>): Promise<AuthResult> {
     if (!supabaseUrl || !supabaseAnonKey) return { error: "Supabase не настроен" };
     const result = await authFetch<{ access_token?: string; refresh_token?: string; session?: { access_token?: string; refresh_token?: string } }>(
       "/auth/v1/signup",
       {
-        email: email.trim(),
-        password,
         data,
-        redirect_to: `${window.location.origin}/`,
       },
     );
     if (result.error) return result;
@@ -304,7 +278,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
       return { info: "Аккаунт создан. Загружаем профиль..." };
     }
-    return { info: "Аккаунт создан. Проверь почту и подтверди адрес, затем войди." };
+    return { error: "Supabase не вернул сессию. Проверь, включены ли Anonymous sign-ins." };
   }
 
   async function authFetch<T>(path: string, body: Record<string, unknown>): Promise<T & AuthResult> {
@@ -473,6 +447,9 @@ function humanAuthError(message: string, code?: string, status?: number): AuthRe
   }
   if (c.includes("email_provider_disabled") || m.includes("email provider")) {
     return { error: "Email-регистрация выключена в Supabase. Включи Email provider в Authentication.", code };
+  }
+  if (c.includes("anonymous") || m.includes("anonymous")) {
+    return { error: "Anonymous sign-ins выключены в Supabase. Включи их в Authentication, чтобы регистрироваться без email.", code };
   }
   if (m.includes("invalid path")) return { error: "Supabase вернул некорректный Auth URL. Попробуй ещё раз.", code };
   if (m.includes("already registered") || m.includes("already been registered") || m.includes("user already registered")) {

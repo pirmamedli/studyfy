@@ -43,7 +43,6 @@ function SupabaseAuth() {
   const [accessCode, setAccessCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordRepeat, setPasswordRepeat] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,12 +57,14 @@ function SupabaseAuth() {
   }
 
   function validateAccount() {
+    if (isSignup) {
+      if (phone.trim().length < 5) return "Введи номер телефона";
+      if (!telegram.trim()) return "Введи Telegram";
+      if (accessCode.trim().length < 4) return "Введи код доступа";
+      return "";
+    }
     if (!email.includes("@")) return "Введи корректный email";
-    if (isSignup && phone.trim().length < 5) return "Введи номер телефона";
-    if (isSignup && !telegram.trim()) return "Введи Telegram";
-    if (isSignup && accessCode.trim().length < 4) return "Введи код доступа";
     if (password.length < 6) return "Пароль не короче 6 символов";
-    if (isSignup && password !== passwordRepeat) return "Пароли не совпадают";
     return "";
   }
 
@@ -96,8 +97,6 @@ function SupabaseAuth() {
     try {
       const res = isSignup
         ? await signUp({
-            email,
-            password,
             profile: {
               name,
               nickname: nickname || name,
@@ -232,17 +231,6 @@ function SupabaseAuth() {
       {isSignup && step === 4 && (
         <>
           <label className="field" style={{ marginBottom: 12 }}>
-            <span className="field-label">Email</span>
-            <input
-              className="input"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setErr(""); }}
-            />
-          </label>
-          <label className="field" style={{ marginBottom: 12 }}>
             <span className="field-label">Телефон</span>
             <input
               className="input"
@@ -275,30 +263,9 @@ function SupabaseAuth() {
               style={{ textTransform: "uppercase", letterSpacing: ".06em" }}
             />
           </label>
-          <label className="field" style={{ marginBottom: 14 }}>
-            <span className="field-label">Пароль</span>
-            <input
-              className={"input" + (err ? " is-error" : "")}
-              type="password"
-              autoComplete="new-password"
-              placeholder="Не короче 6 символов"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setErr(""); }}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-            />
-          </label>
-          <label className="field">
-            <span className="field-label">Повтори пароль</span>
-            <input
-              className={"input" + (err ? " is-error" : "")}
-              type="password"
-              autoComplete="new-password"
-              placeholder="Ещё раз пароль"
-              value={passwordRepeat}
-              onChange={(e) => { setPasswordRepeat(e.target.value); setErr(""); }}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-            />
-          </label>
+          <p className="row-sub" style={{ margin: "6px 0 0" }}>
+            Аккаунт создаётся без email и без писем. Вход сохранится на этом устройстве.
+          </p>
         </>
       )}
 
