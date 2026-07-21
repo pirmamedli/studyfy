@@ -41,6 +41,7 @@ import { deleteRemoteState, loadRemoteState, saveRemoteState } from "../data/rem
 export interface AuthResult {
   error?: string;
   info?: string;
+  code?: string;
 }
 
 export interface SignUpInput {
@@ -190,7 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         "Supabase долго отвечает. Попробуй ещё раз.",
       );
       if (error && isInvalidPathError(error.message)) return directSignIn(email, password);
-      return error ? humanAuthError(error.message) : {};
+      return error ? authErrorToResult(error) : {};
     } catch (error) {
       if (isInvalidPathError(error instanceof Error ? error.message : "")) return directSignIn(email, password);
       return humanAuthError(error instanceof Error ? error.message : "Не удалось войти");
@@ -241,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setState((s) => updateProfileR(s, nextProfile));
         return fallback;
       } else if (error) {
-        return humanAuthError(error.message);
+        return authErrorToResult(error);
       }
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
         return { error: "Такой email уже зарегистрирован. Попробуй войти." };
@@ -266,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setState((s) => updateProfileR(s, nextProfile));
         return fallback;
       }
-      return humanAuthError(error instanceof Error ? error.message : "Не удалось зарегистрироваться");
+      return authErrorToResult(error);
     }
   }, []);
 
@@ -282,7 +283,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
     });
-    return error ? humanAuthError(error.message) : {};
+    return error ? authErrorToResult(error) : {};
   }
 
   async function directSignUp(email: string, password: string, data: Record<string, unknown>): Promise<AuthResult> {
@@ -323,7 +324,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const text = await response.text();
     const payload = text ? JSON.parse(text) : {};
     if (!response.ok) {
-      return humanAuthError(String(payload.msg ?? payload.message ?? payload.error_description ?? payload.error ?? "Не удалось выполнить запрос")) as T & AuthResult;
+      return authErrorToResult(payload) as T & AuthResult;
     }
     return payload as T & AuthResult;
   }
@@ -429,18 +430,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
-function humanAuthError(message: string): AuthResult {
+function authErrorToResult(error: unknown): AuthResult {
+  if (typeof error === "string") return humanAuthError(error);
+  if (error && typeof error === "object") {
+    const payload = error as {
+      code?: string | number;
+      error_code?: string;
+      error?: string;
+      message?: string;
+      msg?: string;
+      error_description?: string;
+      status?: number;
+    };
+    const code = String(payload.error_code ?? payload.code ?? payload.error ?? "").trim();
+    const message = String(
+      payload.msg ??
+        payload.message ??
+        payload.error_description ??
+        payload.error ??
+        "Не удалось выполнить запрос",
+    );
+    return humanAuthError(message, code || undefined, payload.status);
+  }
+  return humanAuthError(error instanceof Error ? error.message : "Не удалось выполнить запрос");
+}
+
+function humanAuthError(message: string, code?: string, status?: number): AuthResult {
   const m = message.toLowerCase();
-  if (m.includes("invalid login")) return { error: "Неверный email или пароль" };
-  if (m.includes("email not confirmed") || m.includes("email_not_confirmed")) return { error: "Почта ещё не подтверждена. Проверь письмо от Supabase и затем войди." };
-  if (m.includes("invalid path")) return { error: "Supabase вернул некорректный Auth URL. Попробуй ещё раз." };
-  if (m.includes("already registered") || m.includes("already been registered"))
-    return { error: "Такой email уже зарегистрирован" };
-  if (m.includes("user already registered")) return { error: "Такой email уже зарегистрирован" };
-  if (m.includes("signup") && m.includes("disabled")) return { error: "Регистрация временно отключена в Supabase" };
-  if (m.includes("password")) return { error: "Пароль должен быть не короче 6 символов" };
-  if (m.includes("email")) return { error: "Проверь адрес электронной почты" };
-  return { error: message };
+  const c = (code ?? "").toLowerCase();
+  if (m.includes("invalid login")) return { error: "Неверный email или пароль", code };
+  if (c === "email_not_confirmed" || m.includes("email not confirmed") || m.includes("email_not_confirmed")) {
+    return { error: "Почта ещё не подтверждена. Проверь письмо от Supabase и затем войди.", code };
+  }
+  if (c === "email_address_invalid" || m.includes("email address") && m.includes("invalid")) {
+    return {
+      error: "Supabase отклонил этот email как недействительный. Используй реальный существующий адрес или отключи Email address validation в Supabase Auth.",
+      code: code ?? "email_address_invalid",
+    };
+  }
+  if (c.includes("over_email_send_rate_limit") || m.includes("rate limit")) {
+    return { error: "Supabase временно ограничил отправку писем. Подожди пару минут или настрой SMTP.", code };
+  }
+  if (c.includes("email_provider_disabled") || m.includes("email provider")) {
+    return { error: "Email-регистрация выключена в Supabase. Включи Email provider в Authentication.", code };
+  }
+  if (m.includes("invalid path")) return { error: "Supabase вернул некорректный Auth URL. Попробуй ещё раз.", code };
+  if (m.includes("already registered") || m.includes("already been registered") || m.includes("user already registered")) {
+    return { error: "Такой email уже зарегистрирован. Попробуй войти.", code };
+  }
+  if (m.includes("signup") && m.includes("disabled")) return { error: "Регистрация временно отключена в Supabase", code };
+  if (m.includes("password")) return { error: "Пароль должен быть не короче 6 символов", code };
+  if (m.includes("email")) return { error: `Supabase отклонил email: ${message}${code ? ` (${code})` : ""}`, code };
+  return { error: `${message}${code ? ` (${code})` : ""}${status ? ` [${status}]` : ""}`, code };
 }
 
 function isInvalidPathError(message: string): boolean {
